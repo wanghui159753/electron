@@ -1,0 +1,16 @@
+@mixin fl{
+    display: flex;
+    justify-content: space-between;
+}
+header {
+  height: 60px;
+  line-height: 60px;
+  padding: 0 20px;
+  font-size: 16px;
+  color: #fc684f;
+  @include fl;
+  .tit {
+    font-size: 18px;
+    color: #333;
+  }
+}
