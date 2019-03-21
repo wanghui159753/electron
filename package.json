@@ -1,24 +1,26 @@
 {
   "name": "xdpx",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "author": "lmx <lmx920014697@qq.com>",
-  "description": "An electron-vue project",
-  "license": null,
+  "description": "心动配讯为你提供一站式服务",
+  "license": "zhejiangxindongwangluokejiyouxiangongsi",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
-    "build:win32": "electron-builder -w",
+    "build:win32": "node .electron-vue/build.js && electron-builder --ia32 ",
     "dev": "node .electron-vue/dev-runner.js",
     "pack": "npm run pack:main && npm run pack:renderer",
+    "packager": "electron-packager ./ --platform=win32 --arch=x64 --out ./OutApp --overwrite --icon=./build/icons/icon.ico --asar --ignore=\"(dist|src|docs|.gitignore|LICENSE|README.md|webpack.config.js|node_modules)\"",
+    "packagerWin64": "electron-packager ./ --platform=darwin --arch=x64 --icon=./build/icons/icon.ico --out=./outApp --asar --ignore=\"(dist|src|docs|.gitignore|LICENSE|README.md|webpack.config.js|node_modules)\"",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
-    "postinstall": ""
+    "rebuild": "electron-rebuild"
   },
   "build": {
-    "productName": "xdpx",
+    "productName": "心动配讯",
     "appId": "xdpx",
     "directories": {
       "output": "build"
@@ -26,7 +28,7 @@
     "publish": [
       {
         "provider": "generic",
-        "url": "http://www.mc51.xin/"
+        "url": "http://image.xindongpeixun.com/xdpx/pc/win32/"
       }
     ],
     "files": [
@@ -51,7 +53,22 @@
       "icon": "build/icons/icon.icns"
     },
     "win": {
-      "icon": "build/icons/icon.ico"
+      "icon": "build/icons/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "xdpx${version}.${ext}"
     },
     "linux": {
       "icon": "build/icons"
@@ -60,9 +77,11 @@
   "dependencies": {
     "axios": "^0.16.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
-    "electron-updater": "^3.1.1",
+    "electron-updater": "4.0.4",
     "element-ui": "^2.4.5",
+    "fs-extra": "^7.0.1",
     "js-cookie": "^2.2.0",
+    "node-notifier": "^5.3.0",
     "node-sass": "^4.9.2",
     "normalize.css": "^8.0.0",
     "nprogress": "^0.2.0",
@@ -79,7 +98,9 @@
     "vue-quill-editor": "^3.0.6",
     "vue-router": "^2.5.3",
     "vue-splitpane": "^1.0.2",
-    "vuex": "^2.3.1"
+    "vuedraggable": "^2.17.0",
+    "vuex": "^2.3.1",
+    "winreg": "^1.2.4"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -96,16 +117,16 @@
     "css-loader": "^0.28.4",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
-    "electron": "^1.7.5",
-    "electron-builder": "^19.56.2",
+    "electron": "^4.0.1",
+    "electron-builder": "^20.23.0",
     "electron-debug": "^1.4.0",
     "electron-devtools-installer": "^2.2.0",
+    "electron-rebuild": "^1.8.4",
     "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^0.11.2",
     "html-webpack-plugin": "^2.30.1",
     "multispinner": "^0.2.1",
     "node-loader": "^0.6.0",
-    "quill-image-extend-module": "^1.1.2",
     "style-loader": "^0.18.2",
     "url-loader": "^0.5.9",
     "vue-html-loader": "^1.2.4",
