@@ -1,10 +1,13 @@
 <template>
     <div class="bg">
-        <hed></hed>
-        <bt :num="n" v-if="$route.path!=='/admission/index/Record'"/>
-        <keep-alive>
-            <router-view v-model="n"></router-view>
-        </keep-alive>
+        <hed style="margin: 0"></hed>
+        <div class="scrollbar" style="
+    height: calc(100% - 58px); padding-top:15px;">
+            <bt :num="n" v-if="$route.path!=='/admission/index/Record'"/>
+            <keep-alive>
+                <router-view v-model="n"></router-view>
+            </keep-alive>
+        </div>
     </div>
 </template>
 <script>
@@ -59,5 +62,6 @@ el-button {
 }
 .bg {
   background: #f3f3f3;
+    height: 100%;
 }
 </style>

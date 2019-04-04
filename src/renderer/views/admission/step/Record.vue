@@ -29,7 +29,6 @@
       :page-size="20"
       layout="prev, pager, next, jumper"
       :total="e"
-      background="#FC684F"
       v-if="tableData.length"
       >
     </el-pagination>
@@ -92,7 +91,6 @@ export default {
         pageSize: 1000
       }
     }).then(res => {
-      console.log(res);
       var arr = [];
       res.data.records.forEach(item => {
         var t = new Date(item.createTime);
@@ -129,7 +127,7 @@ export default {
   text-align: center;
   padding: 100px 0;
   p {
-    font-size: 24px;
+    font-size: 14px;
     color: #666;
   }
 }

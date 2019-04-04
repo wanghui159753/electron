@@ -16,7 +16,7 @@
 export default {
   methods: {
     handleClick(vm, event) {
-      alert(`「${vm.$slots.default[0].text}」被点击啦！`);
+      console.log(`「${vm.$slots.default[0].text}」被点击啦！`);
     }
   }
 };

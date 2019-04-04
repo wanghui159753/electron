@@ -1,41 +1,38 @@
 <template>
 	<div class="login container">
 		<div class="logo">
-			<div class="brand1">
-				<img src="@/../../static/image/brand1.png" alt="">
-			</div>
+      <div class="brand0">
+        <el-button type="text" @click="$router.go(-1)">
+            <span class="el-icon-arrow-left">返回</span>
+        </el-button>
+      </div>
 			<div class="brand2">
-				<img src="@/../../static/image/brand2.png" alt="">
-				<div class="title">
-					<p>后台管理注册</p>
-					<p>houtaiguanli</p>
-				</div>
+				<img src="@/../../static/image/brand2.png" width="224" height="52" alt="">
 			</div>
 		</div>
 		<el-form ref="form" :model="form" :rules="rules" >
-			<el-form-item label="手机号" prop="mobile">
+			<el-form-item label="" prop="mobile">
 				<div class="icon">
 					<img src="@/../../static/image/mobile.png" alt="">
 				</div>
 				<el-input v-model="form.mobile" placeholder="输入手机号" ></el-input>
 			</el-form-item>
-			<el-form-item label="验证码" prop="code">
+			<el-form-item label="" prop="code">
 				<div class="icon">
 					<img src="@/../../static/image/code.png" alt="">
 				</div>
 				<el-input v-model="form.code" placeholder="请输入验证码" ></el-input>
 				<div class="sendcode">
-					<el-button @click="sendIdentifying" v-bind:disabled="isdisabled">{{sendText}}</el-button>
+					<el-button @click="sendIdentifying" type="primary" v-bind:disabled="isdisabled">{{sendText}}</el-button>
 				</div>
 			</el-form-item>
-			<el-form-item label="密码" prop="password">
+			<el-form-item label="" prop="password">
 				<div class="icon">
 					<img src="@/../../static/image/psw.png" alt="">
 				</div>
 				<el-input :type="pwdType" v-model="form.password" placeholder="请输入6-12位数字加字母的密码" ></el-input>
         <span class="show-pwd" @click="showPwd"><svg-icon icon-class="eye" /></span>
 			</el-form-item>
-      <el-form-item>
         <el-dialog
           :visible.sync="dialogVisible"
           width="30%"
@@ -49,8 +46,7 @@
             </div>
           </div>
         </el-dialog>
-      </el-form-item>
-			<el-form-item>
+			<el-form-item class="xieyi">
 				<el-checkbox v-model="checked">我已阅读</el-checkbox>
 				<div class="agree">《心动用户配讯使用协议》</div>
 			</el-form-item>
@@ -64,7 +60,6 @@
 </template>
 <script>
 import { countdown } from "@/utils/countdown"; //验证码倒计时
-import { setInterval } from "timers";
 const request = require("@/api/user/accountMobile");
 export default {
   name: "generallogin",
@@ -77,7 +72,7 @@ export default {
         identityId: ""
       },
       userType:[],
-      checked: "",
+      checked: true,
       sendText: "发送验证码",
       isdisabled: false,
       dialogVisible: false,
@@ -158,7 +153,6 @@ export default {
       }
     },
     sendReq() {
-      console.log(this.form);
       this.loading = true;
       request
         .registerMobile(this.form)
@@ -171,11 +165,14 @@ export default {
         })
         .catch(err => {
           this.loading = false;
-          console.log(err);
         });
     }
   },
+	mounted(){
+        this.$store.commit('setLoading',false)
+	},
   created(){
+      this.$store.commit('setLoading',true)
      request.userType().then((res)=>{
         res.code==200?this.userType=res.data:null
      })
@@ -214,56 +211,54 @@ export default {
   }
 }
 .container {
-  width: 559px;
+  width: 520px;
+	height: 600px;
+	overflow: hidden;
   padding-bottom: 30px;
   margin: 70px auto;
   background-color: #fff;
   border-radius: 18px;
   box-shadow: 0px 9px 10px #d9d9d9;
   position: relative;
+	.xieyi{
+		display: flex;
+		justify-content: center;
+	}
   .logo {
-    width: 270px;
-    height: 150px;
+    width: 224px;
     margin: 0 auto !important;
     display: flex;
     justify-content: space-between;
-    padding-top: 30px;
-    .brand1 {
-      width: 60px;
-      height: 60px;
-      .brand .img {
-        width: 100%;
-        height: 100%;
+     .brand0 {
+     position: absolute;
+     top:20px;
+     left:20px;
+     font-size: 14px;
+       img {
+         width: 16px;
+         float: left;
+         margin-right: 5px;
+		   margin-top: 5px;
+      }
+      span{
+          display: block;
+          float: left;
+          height: 25px;
+          line-height: 24px;
       }
     }
     .brand2 {
-      width: 187px;
+		margin: 60px 0;
       position: relative;
-      img {
-        width: 80%;
-        padding: 16px 0px 0px 0px;
-      }
-      .title {
-        text-align: center;
-        font-size: 22px;
-        font-weight: 800;
-        color: #787474;
-        position: absolute;
-        top: 54px;
-      }
     }
   }
 }
 .el-form {
-  width: 80%;
+  width: 440px;
   margin: 0 auto;
-  .el-form-item {
-    margin-bottom: 0;
-    position: relative;
-  }
   .icon {
     position: absolute;
-    top: 45px;
+    top: 15px;
     z-index: 100;
     left: 8px;
   }
@@ -271,10 +266,10 @@ export default {
     cursor: pointer;
     position: absolute;
     right: 10px;
-    top: 40px;
+    top: 12px;
   }
   .el-form-item {
-    padding-bottom: 10px;
+    margin-bottom: 20px;
   }
 }
 
@@ -307,22 +302,29 @@ export default {
 }
 #register .el-button {
   width: 443px;
-  background: linear-gradient(0deg, #fb780e 0%, #f93812 100%);
+	height: 56px;
+	font-size: 18px;
+  background: #FC684F;
   color: #fff;
 }
 .sendcode .el-button {
-  border: none;
-  color: #fb780e;
-  position: absolute;
-  top: 44px;
-  right: 10px;
-  padding: 8px 0;
+	border: none;
+	color: #fff;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	height: 36px;
 }
 </style>
 <style>
+	.login .el-input{
+		height: 56px;
+		font-size: 16px;
+	}
 .login .el-input .el-input__inner {
   padding-left: 30px !important;
   padding-right: 30px !important;
+	height: 56px;
 }
 
 .login .el-input.is-active .el-input__inner,
@@ -330,9 +332,14 @@ export default {
   border: 1px solid #fa5110;
 }
 
+.brand0 .el-icon-arrow-left::before{
+	font-size: 20px;
+	vertical-align: bottom;
+}
+
 .agree {
   display: inline-block;
-  color: #666;
+  color: #FC684F;
   cursor: pointer;
 }
 

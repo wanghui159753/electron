@@ -1,119 +1,184 @@
 <template>
     <div class="comdition">
         <div class="left">
-            <img src="@/../../static/image/search.png" alt="图片加载失败">
-            <input placeholder="搜索经销商" class="sear" v-model="putinfo" @keyup.enter="search">
-            <el-button type="primary" @click="search">搜索</el-button>
+            <ul class="tab">
+                <li @click="sortType=1" :class="{isActive:sortType==1}">默认</li>
+                <li @click="sortType=3" :class="{isActive:sortType==3}">活跃 <img src="@/../../static/image/Odown.png"
+                                                                                width="9" alt="" v-if="sortType==3"><img
+                        v-else src="@/../../static/image/down.png" width="9" alt=""></li>
+                <li @click="sortType=4" :class="{isActive:sortType==4}">评分 <img src="@/../../static/image/Odown.png"
+                                                                                width="9" alt="" v-if="sortType==4"><img
+                        v-else src="@/../../static/image/down.png" width="9" alt=""></li>
+            </ul>
+            <div class="brand" @click="changeCarBrand" v-if="brand">
+                <img :src="brand.logo" width="28" alt>
+                <p style="color:#000">{{brand.name}}</p>
+            </div>
+            <div class="brand" @click="changeCarBrand" v-if="!brand">
+                <img src="@/../../static/image/carType.png" width="28" alt>
+                <p>选择车型 精准匹配</p>
+            </div>
+            <el-cascader
+                    :options="options"
+                    v-model="selectedOptions"
+                    @change="handleChange"
+                    placeholder="请选择城市"
+            ></el-cascader>
         </div>
-        <div class="center" @click="$emit('input',true)">
-            <img :src="brand?brand.logo:''" alt="图片加载失败" v-if="brand">
-            <p>{{brand?brand.name:"当前未选择车型"}}</p>
-            <span>【切换】</span>
-        </div>
-        <div class="right">
-            <el-button type="primary" @click="reset">重置</el-button>
-            <el-button type="primary" @click="$router.push('/admission/index')" v-if="!myinfo.autoSellerEnter">我要入驻</el-button>
-            <el-button type="primary" @click="$router.push('/accessories/details/'+myinfo.autoSellerId)" v-else>我的店铺</el-button>
+        <div class="right" @click="refresh">
+            <img src="@/../../static/image/reload.png" width="16" alt>
+            <span>刷新</span>
         </div>
     </div>
 </template>
 <script>
-import request from "@/utils/request";
-export default {
-  props: ["brand"],
-  data() {
-    return {
-      putinfo: "",
-      myinfo: {}
+    import request from "@/utils/request";
+    import {merchantCity, getSpecialCity} from "@/api/basicData/basicData.js";
+
+    export default {
+        props: ["brand"],
+        data() {
+            return {
+                putinfo: "",
+                myinfo: {},
+                sortType: 1,
+                options: [],
+                selectedOptions: []
+            };
+        },
+        watch: {
+            sortType(val) {
+                this.emitEvent();
+            }
+        },
+        methods: {
+            refresh() {
+                this.sortType = 1;
+                this.selectedOptions = []
+                this.emitEvent();
+                this.$emit("reLoad");
+            },
+            changeCarBrand() {
+                this.$emit("changeCarBrand");
+            },
+            handleChange(e) {
+                this.emitEvent();
+            },
+            emitEvent() {
+                this.$emit("sendObj", {
+                    sortType: this.sortType,
+                    provinceId: this.selectedOptions[0]
+                        ? this.selectedOptions[0].split(",")[0]
+                        : null,
+                    regionId: this.selectedOptions[2]
+                        ? this.selectedOptions[2].split(",")[0]
+                        : null,
+                    cityId: this.selectedOptions[1]
+                        ? this.selectedOptions[1].split(",")[0]
+                        : null
+                });
+            },
+            search() {
+                this.$emit("keyword", this.putinfo);
+            },
+            reset() {
+                this.$emit("reset");
+            },
+            initArea() {
+                merchantCity().then(res => {
+                    this.options = getSpecialCity(res.data,3);
+                });
+            }
+        },
+        created() {
+            this.initArea();
+            request({
+                url: "merchant/merchant/session/info",
+                method: "get"
+            }).then(res => {
+                this.myinfo = res.data;
+            });
+        }
     };
-  },
-  methods: {
-    search() {
-      this.$emit("keyword", this.putinfo);
-    },
-    reset() {
-      this.$emit("reset");
-    }
-  },
-  watch: {
-    brand(val) {
-      console.log(val, "-------------------");
-    }
-  },
-  created() {
-    request({
-      url: "merchant/merchant/session/info",
-      method: "get"
-    }).then(res => {
-      this.myinfo = res.data;
-    });
-  }
-};
 </script>
 <style lang="scss" scoped>
-@mixin fl {
-  float: left;
-}
-.comdition {
-  padding: 24px 40px 18px 40px;
-  display: flex;
-  border-bottom: 1px solid #bfbfbf;
-  justify-content: space-between;
-  div {
-    height: 50px;
-    line-height: 50px;
-  }
-  .left {
-    padding-top: 4px;
-    position: relative;
-    .sear {
-      @include fl;
-      width: 223px;
-      height: 36px;
-      border: 0;
-      outline: 0;
-      border-radius: 4px;
-      background: #e0e0e0;
-      text-indent: 2em;
-      vertical-align: middle;
+    @mixin fl {
+        float: left;
     }
-    img {
-      width: 21px;
-      position: absolute;
-      left: 5px;
-      top: 11px;
-      z-index: 20;
+
+    .comdition {
+        cursor: pointer;
+        padding: 0 16px;
+        overflow: hidden;
+        background: #f8f8fa;
+        justify-content: space-between;
+        div {
+            height: 50px;
+            line-height: 50px;
+        }
+        .left {
+            float: left;
+            overflow: hidden;
+            .tab {
+                float: left;
+                display: flex;
+                list-style: none;
+                margin-right: 32px;
+                .isActive {
+                    color: #ff6749;
+                    border-color: #ff6749;
+                }
+                li {
+                    text-align: center;
+                    width: 80px;
+                    height: 50px;
+                    line-height: 50px;
+                    border-bottom: 3px solid transparent;
+                }
+            }
+            .brand {
+                float: left;
+                width: 175px;
+                padding: 0 10px;
+                height: 36px;
+                margin-right: 32px;
+                margin-top: 7px;
+                border: 1px solid #e5e5e5;
+                display: flex;
+                align-items: center;
+                font-size: 13px;
+                color: #cccccc;
+                line-height: 36px;
+                img {
+                    margin-right: 13px;
+                }
+            }
+        }
+        .right {
+            float: right;
+            font-size: 16px;
+            img {
+                vertical-align: text-top;
+            }
+        }
     }
-    .el-button {
-      @include fl;
-      width: 64px;
-      height: 36px;
-      margin-left: 24px;
-      padding: 0;
+</style>
+<style lang='scss'>
+    .comdition {
+        .el-cascader {
+            margin-top: 10px;
+            float: left;
+            .el-icon-arrow-down,
+            .el-icon-arrow-up {
+                line-height: 30px;
+            }
+        }
+        .el-cascader,
+        .el-input__inner,
+        .el-input {
+            width: 116px !important;
+            height: 30px;
+            line-height: 30px;
+        }
     }
-  }
-  .center {
-    cursor: pointer;
-    font-size: 18px;
-    img {
-      @include fl;
-      width: 50px;
-    }
-    p {
-      @include fl;
-      color: #333;
-      margin: 0 7px 0 21px;
-    }
-    span {
-      @include fl;
-      color: #ff6749;
-    }
-  }
-}
-.right {
-  .el-button {
-    width: 110px;
-    height: 37px;
-  }
-}
 </style>

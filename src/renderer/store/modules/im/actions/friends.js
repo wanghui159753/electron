@@ -21,7 +21,7 @@ export function onFriends(friends) {
 // 更新好友资料，添加好友成功
 export function onUpdateFriend(error, friends) {
   if (error) {
-    alert(error)
+    console.log(error)
     return
   }
   if (!Array.isArray(friends)) {
@@ -55,7 +55,7 @@ export function onUpdateFriend(error, friends) {
 // 删除好友，这里使用标记删除
 export function onDeleteFriend(error, friends) {
   if (error) {
-    alert(error)
+    console.log(error)
     return
   }
   if (!Array.isArray(friends)) {
@@ -74,27 +74,27 @@ export function onDeleteFriend(error, friends) {
 export function onSyncFriendAction(obj) {
   switch (obj.type) {
     case 'addFriend':
-      // alert('你在其它端直接加了一个好友' + obj.account + ', 附言' + obj.ps);
+      // console.log('你在其它端直接加了一个好友' + obj.account + ', 附言' + obj.ps);
       onUpdateFriend(null, obj.friend);
       break;
     case 'applyFriend':
-      alert('你在其它端申请加了一个好友' + obj.account + ', 附言' + obj.ps);
+     console.log('你在其它端申请加了一个好友' + obj.account + ', 附言' + obj.ps);
       break;
     case 'passFriendApply':
-      alert('你在其它端通过了一个好友申请' + obj.account + ', 附言' + obj.ps);
+      console.log('你在其它端通过了一个好友申请' + obj.account + ', 附言' + obj.ps);
       onUpdateFriend(null, obj.friend);
       break;
     case 'rejectFriendApply':
-      alert('你在其它端拒绝了一个好友申请' + obj.account + ', 附言' + obj.ps);
+    console.log('你在其它端拒绝了一个好友申请' + obj.account + ', 附言' + obj.ps);
       break;
     case 'deleteFriend':
-      // alert('你在其它端删了一个好友' + obj.account);
+      // console.log('你在其它端删了一个好友' + obj.account);
       onDeleteFriend(null, {
         account: obj.account
       });
       break;
     case 'updateFriend':
-      // alert('你在其它端更新了一个好友', obj.friend);
+      // console.log('你在其它端更新了一个好友', obj.friend);
       onUpdateFriend(null, obj.friend);
       break;
   }

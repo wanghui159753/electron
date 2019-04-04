@@ -16,21 +16,18 @@ export function upload(data) {
   };
   return axios.post('http://upload.qiniu.com/', data, config)
 }
-export function up(item, dom, fn) {
+export function up(item, dom, fn,parent) {
   const file = item.files[0];
-  console.log(file,"获取到的")
   let load;
   if (this.checkUpload.call(dom, file)) {
     load = dom.$loading({
+      target:parent,
       lock: true,
-      text: "Loading",
       spinner: "el-icon-loading",
       background: "rgba(0, 0, 0, 0.7)"
     });
     let time=new Date();
     time=time.getTime();
-    console.log(time)
-    // ?item.files[0].name:time+".png"
     getToken({ "fileName": item.files[0].name?item.files[0].name:time+".png"}).then(response => {
       const url = `${response.data.domain}/${response.data.key}`;
       const formData = new FormData();
@@ -38,14 +35,15 @@ export function up(item, dom, fn) {
       formData.append('key', response.data.key);
       formData.append('file', file);
       upload(formData).then(res => {
-        fn(res);
+          //http://testcdn.xindongpeixun.com/ 测试
+          //http://cdn.xindongpeixun.com/ 线上
+        fn("http://cdn.xindongpeixun.com/" + res.data.data.key);
         load.close();
       }).catch((res) => {
         fn(res)
         load.close();
       })
-    }).catch((res)=>{
-      console.log(res)
+    }).catch(()=>{
       load.close();
     })
   } else {

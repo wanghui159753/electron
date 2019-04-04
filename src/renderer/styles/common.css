@@ -5,11 +5,22 @@
     visibility: hidden;
     height: 0
 }
-
+.el-message-box__wrapper{
+    left: 180px;
+}
 .clearfloat {
     zoom: 1
 }
-
+.page {
+    position: fixed;
+    border-top: 1px solid #a6a6a6;
+    bottom: 0;
+    left: 180px;
+    right: 0;
+    padding: 13px 0;
+    text-align: center;
+    background: #fff;
+  }
 .dialog.el-dialog__wrapper .el-dialog {
     position: absolute !important;
     right: 0;
@@ -45,7 +56,7 @@
 
 .scrollbar {
     overflow: auto;
-    height: calc( 100vh - 80px);
+    height: calc( 100vh - 32px);
 }
 
 .scrollbar::-webkit-scrollbar {
@@ -162,34 +173,29 @@
 .clearfix{
     zoom:1;
 }
-/* 
-.selectMenu-list .el-tree-node.is-current.is-focusable{
-  background-color: #c4c4c4 ;
-}
- */
 .chatEditor .ql-toolbar.ql-snow{
  display: none !important;
 }
-.chatEditor .ql-editor{
- display: flex;
- flex-wrap: wrap;
+.chatEditor .ql-editor p:nth-of-type(2n)>br{
+    display: none;
 }
 .chatEditor .ql-editor p{
-  width: 100% !important;
+    height: auto;
+    line-height: 25px;
+    font-size: 14px;
+    min-width: 1px;
 }
-/* .message .splitter-pane.splitter-paneL.horizontal{
-   height: 78.11% !important;
-}
-.message .splitter-pane.splitter-paneR.horizontal{
-    height: 21.89% !important;
-} */
 .menu-wrapper .el-menu-item{
     height: 36px;
+    transition: all .3s;
+}
+.menu-wrapper .el-menu-item:hover{
+    transform: scale(1.1);
+    padding-left: 35px !important;
 }
 .menu-wrapper .el-menu-item.is-active{
-  background-color: #FF6749 !important;
+  color: #FF6749 !important;
   height: 36px;
-  color: #fff !important;
 } 
 .el-menu-item,.el-submenu__title{
   line-height: 36px !important;

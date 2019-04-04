@@ -2,6 +2,7 @@ import Cookies from 'js-cookie'
 
 const app = {
   state: {
+    loading:true,
     sidebar: {
       opened: true,
       withoutAnimation: false

@@ -7,6 +7,14 @@ export function sendCode(data) {
         data: data
     })
 }
+export function resetMob(data) {
+    return request({
+        url: "/user-sys/user/account/mobile/update",
+        method: "post",
+        data: data
+    })
+}
+
 // 用户注册 手机号码注册
 export function registerMobile(data) {
     return request({

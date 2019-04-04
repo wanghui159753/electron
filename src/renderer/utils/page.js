@@ -11,7 +11,7 @@ var page = {
   // 切换页面，并错误提示
   turnPage: (message, url) => {
     if (message) {
-      alert(message)
+      console.log(message)
     }
     if (url) {
       if (pageMap[url]) {

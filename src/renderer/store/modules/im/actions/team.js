@@ -1,31 +1,74 @@
 import store from '@/store'
-
 // 收到群列表及更新群列表接口
 export function onTeams(teams) {
-  if (!Array.isArray(teams)) {
-    teams = [teams]
+  if (teams) {
+    if (!Array.isArray(teams)) {
+      teams = [teams]
+    }
+    let arr = []
+    teams.forEach(team => {
+      if (store.state.im.currChatroomId == 'team-' + team.teamId) {
+        store.dispatch('getChatGroup', { id: team.teamId })
+      }
+      arr.push(team.teamId)
+    })
+    store.dispatch('isMute', { id: arr })
+    store.commit('updateTeamList', teams)
   }
-  teams.forEach(team => {
-    if (team.validToCurrentUser === undefined) {
-      team.validToCurrentUser = true
-    }
-    if (team.avatar && team.avatar.indexOf('nim.nosdn.127') > 0 && team.avatar.indexOf('?imageView') === -1) {
-      team.avatar = team.avatar + '?imageView&thumbnail=300y300'
-    }
-  })
-  store.commit('updateTeamList', teams)
 }
 
 // 收到群成员及更新群成员接口
 export function onTeamMembers(obj) {
   store.commit('updateTeamMembers', obj)
 }
+//更新当前群成员ji群信息
+export function getChatGroup(str, obj) {
+  function get(arr,chatRoom){
+      store.dispatch("searchUsers", {
+          accounts: arr,
+          done: obj => {
+              obj.map(item => {
+                  item.nickInTeam = chatRoom[item.account].nickInTeam;
+              });
+              commit("setTeamMembers", obj);
+              commit("updateUserInfo", obj);
+          }
+      });
+  }
+  let { state, commit } = str || store
+  if (obj.id || obj.teamId) {
+    let id = obj.teamId ? obj.teamId : obj.id.substring(5);
+    store.dispatch("getTeamMembers", {
+      teamId: id,
+      done: (error, obj) => {
+        if (error) {
+         store.dispatch("connect");
+          // return  getChatGroup(str, obj);
+        } else {
+          let chatRoom = {};
+          obj.members.forEach(item => {
+            chatRoom[item.account] = item;
+          });
+          commit("setCurrChatroom", { chatRoom, id: obj.id });
+          let arr=Object.keys(state.currChatroomMembers);
+          if(arr.length<150){
+              get(arr,chatRoom)
+          }else{
+              for (let i=0;i<arr.length/150+1;i++){
+                  get(arr.slice(i,150*(i+1)),chatRoom)
+              }
+          }
+        }
+      }
+    });
+  }
+}
 
-export function onCreateTeam({ team, owner }) {
-  onTeams(team)
+export function onCreateTeam(obj) {
+  onTeams(obj)
   onTeamMembers({
-    teamId: team.teamId,
-    members: [owner]
+    teamId: obj.teamId,
+    members: [obj.owner]
   })
 }
 
@@ -137,7 +180,7 @@ export function delegateTeamFunction({ state }, { functionName, options }) {
   }
 }
 
-export function getTeamMembers({ state }, teamId) {
+export function getTeamMembers({ state }, { teamId, done }) {
   const nim = state.nim
   if (!nim) {
     // 防止nim未初始化
@@ -148,19 +191,21 @@ export function getTeamMembers({ state }, teamId) {
   }
   nim.getTeamMembers({
     teamId: teamId,
-    done: (err, obj) => {
-      if (obj.members) {
-        onTeamMembers({
-          teamId: obj.teamId,
-          members: obj.members
-        })
-      } else {
-        setTimeout(() => {
-          getTeamMembers(store, teamId)
-        }, 200);
-      }
-    }
+    done
   })
+  // : (err, obj) => {
+  //   console.log(obj,'群众查询结果')
+  //   if (obj.members) {
+  //     onTeamMembers({
+  //       teamId: obj.teamId,
+  //       members: obj.members
+  //     })
+  //   } else {
+  //     setTimeout(() => {
+  //       getTeamMembers(store, teamId)
+  //     }, 200);
+  //   }
+  // }
 }
 
 export function checkTeamMsgReceipt({ state }, msgs) {

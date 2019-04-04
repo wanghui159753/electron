@@ -47,7 +47,7 @@ export default {
   },
   created() {
     getMyShop().then(res => {
-      this.status = res.data;
+      this.status = res.data.status;
       setLocal("myshop", JSON.stringify(res.data));
     });
   }

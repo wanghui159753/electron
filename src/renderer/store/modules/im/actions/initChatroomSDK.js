@@ -31,7 +31,8 @@ export function initChatroomSDK({ state, commit, dispatch }, obj) {
         onerror: function onChatroomError(error, obj) {
           dispatch('hideLoading')
           if (error) {
-            alert('网络连接状态异常')
+            console.log(error,'error')
+            // alert('网络连接状态异常')
             // location.href='#/room'
           }
         },

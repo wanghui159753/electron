@@ -4,7 +4,7 @@
       mode="vertical"
       :show-timeout="200"
       :default-active="activeName"
-      background-color="#304156"
+      background-color="black"
       text-color="#bfcbd9"
       active-text-color="#FF6749"
       @select="handleSelect"
@@ -19,6 +19,7 @@ import { mapGetters } from "vuex";
 import SidebarItem from "./SidebarItem";
 import ScrollBar from "@/components/ScrollBar";
 import Menu from "@/configs/menu.js";
+
 export default {
   /**
    * show-timeout 展开菜单的延时
@@ -27,7 +28,8 @@ export default {
    */
   data() {
     return {
-      activeName: "/" + this.$route.path.substring(1).split("/")[0]
+      activeName: "/" + this.$route.path.substring(1).split("/")[0],
+      routerList:[]
     };
   },
   components: { SidebarItem, ScrollBar },
@@ -47,15 +49,11 @@ export default {
     }
   },
   watch: {
-    $route() {
+    $route(to,from) {
       this.activeName = "/" + this.$route.path.substring(1).split("/")[0];
     }
   }
-  // created() {
-  //   this.activeName = "/" + this.$route.path.substring(1).split("/")[0];
-  // }
 };
 </script>
 <style type="text/css">
-
 </style>

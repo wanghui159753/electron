@@ -1,6 +1,6 @@
 <template>
   <div class="m-chat-emoji">
-    <div class="emoji-content">
+    <div class="emoji-content scrollbar">
       <div class="cnt">
         <span class="emoji-item" :class="{'pinup-item':item.type==='pinup'}" v-for="(item,index) in currEmoji.list" :key="index" @click.stop="selectEmoji(item)">
           <img :src="item.img">
@@ -77,8 +77,10 @@ export default {
     selectAlbum(album) {
       this.currType = album.type;
       this.currAlbum = album.name;
+      
     },
     selectEmoji(emoji) {
+       //this.$emit("movingcursor")
       if (this.currType === "emoji") {
         // 由触发父组件事件，增加表情文案
         this.$emit("add-emoji", emoji.key);
@@ -110,8 +112,10 @@ export default {
             }
           });
         }
+        
         this.$emit("hide-emoji");
       }
+      
     }
   }
 };
@@ -153,6 +157,7 @@ export default {
     height: 240px;
     overflow-y: auto;
     box-shadow: 0px 0px 8px 6px #ddd !important;
+    background: #fff;
     .cnt {
       position: relative;
       display: block;
@@ -169,7 +174,7 @@ export default {
       padding: 4px 10px;
       vertical-align: middle;
       /*border: 1px solid #fff;*/
-      /*margin-left: -1px;*/
+      margin-left: 4px;
       /*margin-bottom: -1px;*/
       img {
         width: inherit;

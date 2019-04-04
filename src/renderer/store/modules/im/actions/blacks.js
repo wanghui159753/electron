@@ -41,6 +41,7 @@ export function onMarkInBlacklist (obj) {
  * 
  */
 export function updateBlack ({state}, {account, isBlack}) {
+  console.log('[[[[[[[[[[[[[')
   const nim = state.nim
   if (account && (typeof isBlack === 'boolean')) {
     nim.markInBlacklist({
@@ -49,7 +50,7 @@ export function updateBlack ({state}, {account, isBlack}) {
       isAdd: isBlack,
       done: function (error, obj) {
         if (error) {
-          alert(error)
+          console.log(error)
           return
         }
         onMarkInBlacklist(obj)
