@@ -23,7 +23,10 @@ export default {
   },
   activated() {
     this.pu();
-  }
+  },
+    created(){
+      this.pu()
+    }
 };
 </script>
 <style lang="scss" scoped>

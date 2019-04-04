@@ -10,7 +10,7 @@ export function getChatroomInfo ({state, commit, dispatch}) {
     chatroom.getChatroom({
       done: function getChatroomDone (error, info) {
         if (error) {
-          alert(error.message)
+          console.log(error.message)
           return
         }
         info = info.chatroom || {creator: ''}
@@ -19,7 +19,7 @@ export function getChatroomInfo ({state, commit, dispatch}) {
           accounts: [creator],
           done: function getChatroomMembersInfoDone (error, user) {
             if (error) {
-              alert(error.message)
+              console.log(error.message)
               return
             }
             commit('getChatroomInfo', Object.assign(info,  {actor: user.members[0]}))
@@ -49,7 +49,7 @@ function getChatroomMembersLocal (isGuest, callback) {
       limit: 100,
       done: function getChatroomMembersDone (error, obj) {
         if (error) {
-          alert(error.message)
+          console.log(error.message)
           return
         }
         callback(obj)

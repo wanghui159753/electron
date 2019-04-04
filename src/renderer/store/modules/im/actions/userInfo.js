@@ -49,7 +49,6 @@ export function formatUserInfo(obj) {
     createTime: obj.createTime || (new Date()).getTime(),
     updateTime: obj.updateTime || (new Date()).getTime()
   })
-
   return result
 }
 

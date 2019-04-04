@@ -1,6 +1,7 @@
 // Action 提交的是 mutation，而不是直接变更状态。
 // Action 可以包含任意异步操作。
 import { getLocal } from '@/utils/localstorage'
+import  cookie  from '@/utils/cookie'
 import pageUtil from '@/utils/page'
 
 /* 导出actions方法 */
@@ -11,11 +12,11 @@ import { updateBlack } from './blacks'
 import { updateFriend, addFriend, deleteFriend, applyFriend } from './friends'
 import { resetSearchResult, searchUsers, searchTeam } from './search'
 import { deleteSession, setCurrSession, resetCurrSession, upsession, insert } from './session'
-import { sendMsg, sendFileMsg, sendMsgReceipt, sendRobotMsg, revocateMsg, getHistoryMsgs, resetNoMoreHistoryMsgs, continueRobotMsg, deleteMsg, getLocalMsgs, forwardMsg, previewFileMsg } from './msgs'
+import { sendMsg, sendFileMsg, sendMsgReceipt, sendRobotMsg, revocateMsg, getHistoryMsgs, resetNoMoreHistoryMsgs, continueRobotMsg, deleteMsg, getLocalMsgs, forwardMsg, previewFileMsg ,ait} from './msgs'
 import { markSysMsgRead, resetSysMsgs, deleteSysMsgs, markCustomSysMsgRead } from './sysMsgs'
-import { sendChatroomMsg, sendChatroomRobotMsg, sendChatroomFileMsg, getChatroomHistoryMsgs } from './chatroomMsgs'
+import { sendChatroomMsg, sendChatroomRobotMsg, sendChatroomFileMsg, getChatroomHistoryMsgs, dismissTeam,transferTeam, leaveTeam, removeTeamMembers, newChatRoom, teamAdd, upinfo, setNick, isMute } from './chatroomMsgs'
 import { initChatroomInfos, getChatroomInfo, getChatroomMembers, clearChatroomMembers } from './chatroomInfos'
-import { delegateTeamFunction, onTeamNotificationMsg, enterSettingPage, getTeamMembers, checkTeamMsgReceipt, getTeamMsgReads } from './team'
+import { delegateTeamFunction, onTeamNotificationMsg, enterSettingPage, getTeamMembers, checkTeamMsgReceipt, getTeamMsgReads, getChatGroup } from './team'
 
 function connectNim({ state, commit, dispatch }, obj) {
   let { force } = Object.assign({}, obj)
@@ -28,7 +29,7 @@ function connectNim({ state, commit, dispatch }, obj) {
     if (!loginInfo.uid) {
       // 无cookie，直接跳转登录页
       // pageUtil.turnPage('无历史登录记录，请重新登录', 'login')
-      location.href = "#/login/generallogin"
+      //location.href = "#/login/generallogin"
     } else {
       // 有cookie，重新登录
       dispatch('initNimSDK', loginInfo)
@@ -45,7 +46,7 @@ function connectChatroom({ state, commit, dispatch }, obj) {
       chatroomId,
       done: function getChatroomAddressDone(error, obj) {
         if (error) {
-          alert(error.message)
+          console.log(error.message)
           location.href = '#/room'
           return
         }
@@ -113,6 +114,8 @@ export default {
   resetCurrSession,
   // 发送消息
   sendMsg,
+  //@人
+  ait,
   sendFileMsg,
   //更新当前会话信息
   upsession,
@@ -149,8 +152,23 @@ export default {
   getChatroomInfo,
   getChatroomMembers,
   clearChatroomMembers,
-
-
+  //新建群组
+  newChatRoom,
+  //刷新当前群聊信息
+  getChatGroup,
+  //主动退群
+  leaveTeam,
+  transferTeam,
+  //踢人出群
+  removeTeamMembers,
+  //拉人进群
+  teamAdd,
+  //修改群信息
+  upinfo,
+  //修改群昵称，是否静音
+  setNick,
+  //查询消息免打扰
+  isMute,
   // 搜索群
   searchTeam,
   // 代理sdk中的群方法
@@ -165,5 +183,7 @@ export default {
   checkTeamMsgReceipt,
   // 查询群消息回执已读列表
   getTeamMsgReads,
+    //解散群组
+    dismissTeam
 
 }

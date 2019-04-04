@@ -6,3 +6,10 @@ export function imLogin() {
         method: "post",
     })
 }
+export function getUserId(params) {
+    return request({
+        url:'/merchant/merchant/userId/build',
+        method:'get',
+        params
+    })
+}

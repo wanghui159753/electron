@@ -1,5 +1,5 @@
 import { formatUserInfo } from './userInfo'
-
+let seached=[];
 export function resetSearchResult({ state, commit }) {
   commit('updateSearchlist', {
     type: 'user',
@@ -17,21 +17,21 @@ export function searchUsers({ state, commit }, obj) {
   if (!Array.isArray(accounts)) {
     accounts = [accounts]
   }
-
   nim.getUsers({
     accounts,
     sync: true,
     done: function searchUsersDone(error, users) {
-      if (error) {
-        alert(error)
-        return
-      }
       commit('updateSearchlist', {
         type: 'user',
         list: users
       })
       let updateUsers = users.filter(item => {
-        let account = item.account
+        let account = item.account;
+        if(state.currSessionInfo){
+            if ((state.currSessionInfo.id||state.currSessionInfo.account).indexOf(account) > -1) {
+                commit('setCurrSessionInfo', item)
+            }
+        }
         if (item.account === state.userUID) {
           return false
         }
@@ -53,8 +53,14 @@ export function searchUsers({ state, commit }, obj) {
 }
 
 export function searchTeam({ state, commit }, obj) {
+  if(seached.includes(obj.teamId)){
+    return
+  }else {
+      seached.push(obj.teamId)
+  }
   let { teamId, done } = obj
   const nim = state.nim
+  if (!teamId) return
   nim.getTeam({
     teamId: teamId,
     done: function searchTeamDone(error, teams) {
@@ -63,22 +69,18 @@ export function searchTeam({ state, commit }, obj) {
           // 群不存在或未发生变化
           teams = []
         } else {
-          alert(error)
+          console.log(error)
           return
         }
       }
       if (!Array.isArray(teams)) {
         teams = [teams]
       }
-      teams.forEach(team => {
-        if (team.avatar && team.avatar.indexOf('nim.nosdn.127') > 0 && team.avatar.indexOf('?imageView') === -1) {
-          team.avatar = team.avatar + '?imageView&thumbnail=300y300'
-        }
-      })
       commit('updateSearchlist', {
         type: 'team',
         list: teams
       })
+      commit('mergeTeams',teams);
       if (done instanceof Function) {
         done(teams)
       }

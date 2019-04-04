@@ -11,12 +11,13 @@ export default {
   props: ["url"],
   methods: {
     changeIt(e) {
-	  this.$emit("input", false);
-	  //当关闭视频播放窗口的时候,如果还未暂停就暂停当前播放   
+      this.$emit("input", false);
+      //当关闭视频播放窗口的时候,如果还未暂停就暂停当前播放
       var video = document.getElementById("video");
       if (!video.paused) {
         video.pause();
       }
+      video = null;
     }
   }
 };
@@ -37,7 +38,7 @@ export default {
   .vid {
     width: 100%;
     height: 100%;
-	overflow: hidden;
+    overflow: hidden;
   }
   img {
     position: absolute;
@@ -48,6 +49,7 @@ export default {
   video {
     width: 100%;
     height: 100%;
+    max-height: 750px;
   }
 }
 </style>

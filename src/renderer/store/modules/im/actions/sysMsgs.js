@@ -3,12 +3,19 @@ import { onUpdateFriend, onDeleteFriend } from './friends'
 import { onRevocateMsg } from './msgs'
 
 export function onSysMsgs(sysMsgs) {
+  console.log(sysMsgs,'------------')
   store.commit('updateSysMsgs', sysMsgs)
 }
 
 export function onSysMsg(sysMsg) {
+    console.log(sysMsg,'系统通知')
   switch (sysMsg.type) {
     // 在其他端添加或删除好友
+    case 'applyFriend':
+
+    store.commit('updateSysMsgs', [sysMsg])
+    break;
+
     case 'addFriend':
       onUpdateFriend(null, {
         account: sysMsg.from
@@ -49,11 +56,11 @@ export function onCustomSysMsgs(customSysMsgs) {
   if (!Array.isArray(customSysMsgs)) {
     customSysMsgs = [customSysMsgs]
   }
-  customSysMsgs = customSysMsgs.filter(msg => {
+  customSysMsgs.forEach(msg => {
     if (msg.type === 'custom') {
-      if (msg.content) {
+      if (typeof msg.content == 'string') {
         try {
-          let content = JSON.parse(msg.content)
+          msg.content = JSON.parse(msg.content)
           // 消息正在输入中
           if ((content.id + '') === '1') {
             return false
@@ -61,7 +68,6 @@ export function onCustomSysMsgs(customSysMsgs) {
         } catch (e) { }
       }
     }
-    return true
   })
   if (customSysMsgs.length > 0) {
     store.commit('updateCustomSysMsgs', customSysMsgs)

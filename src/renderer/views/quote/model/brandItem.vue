@@ -1,36 +1,49 @@
 <template>
     <div class="item">
         <div class="letter">
-            <p>A</p>
+            <p>{{Object.keys(item)[0]}}</p>
         </div>
-        <div class="list">
-            <div class="one" v-for="x in 15" :key="x">
+        <div class="list" v-for="(x , index) in item" :key="index" v-if="x.length">
+            <div class="one" v-for="(obj , index1) in x" :key="index1" @click="selIt(obj)">
                 <div>
-                    <img src="@/../../static/image/bmw.png" alt="">
+                    <img :src="obj.logo" width="70" alt="图片加载失败">
+                    <img src="@/../../static/image/sel.png" alt="" class="sel"
+                         :class="{show:isShow(obj)}">
                 </div>
-                <p>宝马</p>
+                <p>{{obj.name}}</p>
             </div>
         </div>
+        <div class="list" v-else>暂无内容</div>
     </div>
 </template>
 <script>
-export default {};
+export default {
+  methods: {
+    isShow(obj) {
+      if (this.selArr.constructor == Object) {
+        return this.selArr.id == obj.id;
+      } else {
+        let flag = this.selArr.some(item => item.id == obj.id);
+        return flag;
+      }
+    },
+    selIt(obj) {
+      this.$emit("sel", obj);
+    }
+  },
+  props: ["item", "selArr"]
+};
 </script>
 <style lang="scss" scoped>
-@media screen and (min-width: 1400px) and(max-width: 1800px) {
-  .one {
-    width: 114px !important;
-  }
-}
 .item {
   .letter {
     height: 44px;
     font-size: 18px;
     color: #333;
-    p{
-        padding-top: 10px;
-        line-height: 34px;
-        text-indent: 2em;
+    p {
+      padding-top: 10px;
+      line-height: 34px;
+      text-indent: 2em;
     }
   }
   .list {
@@ -42,10 +55,11 @@ export default {};
     color: #333333;
   }
   .one {
-    width: 104px;
+    width: 110px;
     text-align: center;
-    margin:7px 0;
+    margin: 7px 0;
     div {
+      position: relative;
       width: 80px;
       height: 80px;
       border-radius: 5px;
@@ -54,6 +68,19 @@ export default {};
       justify-content: center;
       align-items: center;
       margin: 0 auto;
+      overflow: hidden;
+    }
+    .sel {
+      position: absolute;
+      right: -21px;
+      top: 0;
+      width: 0;
+      height: 0;
+      transition: all 0.3s;
+    }
+    .show {
+      width: 42px;
+      height: 18px;
     }
     p {
       line-height: 36px;

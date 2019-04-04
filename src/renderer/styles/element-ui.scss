@@ -16,7 +16,11 @@
   position: relative;
   margin: 0 auto;
 }
-
+.el-message {
+  z-index: 5000;
+  top: 48%;
+  justify-content: center;
+}
 //element ui upload
 .upload-container {
   .el-upload {

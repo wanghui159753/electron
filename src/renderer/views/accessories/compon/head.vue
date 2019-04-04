@@ -1,86 +1,112 @@
 <template>
-    <header>
-      <div class="position">
-        <span>当前位置：</span>
-        <span>{{cityname}}</span>
-        <el-button class="iscity" type="primary" @click="$emit('input',true)">选择城市</el-button>
-      </div>
-      <p>汽配经销商</p>
-      <div class="perpleIf">
-        <img :src="storinfo.logo" alt="图片加载失败">
-        <span>{{storinfo.name}}</span>
-      </div>
+    <header class="assessories">
+        <div class="search">
+            <input placeholder="搜索品牌/汽配经销商" v-model="search" @keyup.enter="sendObj">
+            <button @click="sendObj">搜索</button>
+        </div>
+        <ul class="Recommend">
+            <li v-for="(x,index) in hotBrand" :key="x" :class="{left_border:index==0,color:index==3||index==5}"
+                @click="sendObj(x)">{{x}}
+            </li>
+        </ul>
     </header>
 </template>
 <script>
-import { getLocal, setLocal } from "@/utils/localstorage";
-import { getMyShop } from "@/api/admission/admission";
-import request from "@/utils/request";
-export default {
-  props: ["cityname"],
-  data() {
-    return {
-      storinfo: null
+    import {getLocal, setLocal} from "@/utils/localstorage";
+    import {getMyShop} from "@/api/admission/admission";
+    import request from "@/utils/request";
+
+    export default {
+        props: ["cityname",'search'],
+        data() {
+            return {
+                storinfo: null,
+                // search: "",
+                hotBrand: ["大众", "丰田", "宝马", "奔驰", "玛莎拉蒂", "福特", "特斯拉"]
+            };
+        },
+        methods: {
+            sendObj(str) {
+                setLocal('accessoriesKeyword', this.search)
+                this.$router.push({
+                    path: "/accessories/searchList",
+                    query: {keyWord: str||this.search}
+                });
+            },
+            esc(el) {
+                el.target.className.indexOf("iscity") !== -1 ||
+                el.target.parentNode.className.indexOf("iscity") !== -1
+                    ? null
+                    : this.$emit("input", false);
+            }
+        },
+        actived() {
+            this.search = getLocal('accessoriesKeyword') || '';
+        },
+        mounted() {
+            this.search = getLocal('accessoriesKeyword') || '';
+            document.body.addEventListener("click", this.esc);
+        },
+        beforeDestroy() {
+            document.body.removeEventListener("click", this.esc);
+        }
     };
-  },
-  created() {
-    if (getLocal("myshop")) {
-      this.storinfo = JSON.parse(getLocal("myshop"));
-    } else {
-      getMyShop().then(res => {
-        this.storinfo = res.data;
-        setLocal("myshop", JSON.stringify(res.data));
-      });
-    }
-  },
-  mounted() {
-    document.body.onclick = el => {
-      el.target.className.indexOf("iscity") !== -1 ||
-      el.target.parentNode.className.indexOf("iscity") !== -1
-        ? null
-        : this.$emit("input", false);
-    };
-  }
-};
 </script>
 <style lang="scss" scoped>
-header {
-  cursor: pointer;
-  display: flex;
-  text-align: center;
-  justify-content: space-between;
-  height: 78px;
-  padding: 0 40px;
-  width: 100%;
-  line-height: 78px;
-  background: #fff;
-  .position {
-    font-size: 28px;
-    color: #fb780e;
-    .el-button {
-      width: 110px;
-      height: 37px;
+    .assessories {
+        height: 86px;
+        padding-top: 5px;
+        background: #fff;
+        display: block;
+        .Recommend {
+            width: 440px;
+            margin: 0 auto;
+            overflow: hidden;
+            .left_border {
+                border-left: 0;
+            }
+            .color {
+                color: #fc684f;
+            }
+            li:hover {
+                text-decoration: underline;
+            }
+            li {
+                color: #333;
+                list-style: none;
+                float: left;
+                padding: 0 9px;
+                font-size: 12px;
+                line-height: 12px;
+                border-left: 1px solid #ccc;
+                cursor: pointer;
+            }
+        }
+        .search {
+            margin: 0 auto 13px;
+            width: 440px;
+            height: 42px;
+            border: 1px solid #fc684f;
+            display: flex;
+            input {
+                width: 360px;
+                height: 40px;
+                text-indent: 12px;
+                border: 0;
+                outline: 0;
+            }
+            button:hover {
+                background: rgba(252, 104, 79, 0.8);
+            }
+            button {
+                transition: all 0.3s;
+                border: 0;
+                outline: 0;
+                width: 80px;
+                background: #fc684f;
+                color: #fff;
+                font-size: 14px;
+            }
+        }
     }
-  }
-  p {
-    font-size: 22px;
-  }
-  span {
-    font-size: 18px;
-  }
-  div {
-    span {
-      font-size: 13px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    img {
-      width: 44px;
-      height: 44px;
-      vertical-align: middle;
-      border-radius: 10%;
-    }
-  }
-}
 </style>

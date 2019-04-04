@@ -1,6 +1,6 @@
 <template>
   <div class="m-chat-emoji">
-    <div class="emoji-content">
+    <div class="emoji-content scrollbar">
       <div class="cnt">
         <span class="emoji-item" :class="{'pinup-item':item.type==='pinup'}" v-for="(item,index) in currEmoji.list" :key="index" @click.stop="selectEmoji(item)">
           <img :src="item.img">
@@ -116,8 +116,10 @@ export default {
   top: -250px;
   height: 240px;
   left: -120px;
-  width: 100%;
+  width: 460px;
+  border-radius: 5px;
   background-color: #fff;
+  z-index: 2000;
   .emoji-channel {
     position: relative;
     width: 100%;
@@ -145,6 +147,7 @@ export default {
     width: 460px;
     height: 240px;
     overflow-y: auto;
+    background: #fff;
     .cnt {
       position: relative;
       display: block;

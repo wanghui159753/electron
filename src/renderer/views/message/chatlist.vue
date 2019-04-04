@@ -1,282 +1,483 @@
 <template>
     <div class="chatlist scrollbar clearfix" id="msgbox">
-      <div ref="msglist" > 
-          <ul>
-               <!-- <li class="isMoreHistory"  @click="getHistoryMsgs">
-                加载更多
-              </li>
-             <li class="isMoreHistory" >
-                已无更多记录
-              </li>-->
-          </ul> 
-          <el-checkbox-group v-model="checkList" @change="updateSelectContent">
-            <label v-for="msg in msglist" 
-                :key="msg.idClient">
-              <chat-item
-                :isbg="isbg"
-                :type="type"
-                :msgShow='msgShow'
-                :rawMsg="msg"
-                :userInfos="userInfos"
-                :myInfo="myInfo"
-                :isHistory='isHistory'
-                @tell-modal="selectMore"
-                @msg-loaded="msgLoaded"
-                @pushURL="getURL"
-            ></chat-item>
-           </label>
-           </el-checkbox-group>
-      </div>
-      <videoPlear v-show="blean" v-model="blean" :url="url"></videoPlear>
+        <div class="warn" v-if="hasAuth"><span>此商家未入驻“心动配讯”平台，<br>若交易产生纠纷， 本平台概不负责!</span></div>
+        <div ref="msglist">
+            <div
+                    class="moreMsg"
+                    v-if="!canLoadMore&&$store.state.im.currSessionInfo"
+                    @click="getHistoryMsgs"
+            >查看更多消息
+            </div>
+            <div class="moreMsg noMoreMsg" v-else>没有更多消息了</div>
+            <el-checkbox-group v-model="checkList" @change="updateSelectContent">
+                <label
+                        v-for="(msg,ind ) in msglist"
+                        :key="msg.idClient"
+                        @contextmenu="contextmenu($event,msg)"
+                        v-contextmenu:contextmenu
+                >
+                    <chat-item
+                            :curAudioInfo="curAudioInfo"
+                            :isbg="isbg"
+                            :type="type"
+                            :msgShow="msgShow"
+                            :rawMsg="msg"
+                            :userInfos="userInfos"
+                            :myInfo="myInfo"
+                            :isRead='msglist[ind] && msglist[ind].isRead'
+                            :isHistory="isHistory"
+                            @msg-loaded="msgLoaded"
+                            @pushURL="getURL"
+                            @contextmenu.native="cancalBable(msg,$event)"
+                            @vin="vinShow"
+                            @showOrder="showOrder"
+                            @newAudio="play"
+                            @quote="quoteShow"
+                            @realOrder="realOrder"
+                    ></chat-item>
+                </label>
+            </el-checkbox-group>
+        </div>
+        <v-contextmenu ref="contextmenu">
+            <v-contextmenu-item @click="copy" v-if="!aitHeader">复制</v-contextmenu-item>
+            <v-contextmenu-item @click="selectorMore" v-if="!aitHeader">多选</v-contextmenu-item>
+            <v-contextmenu-item @click="retransmissionMsg" v-if="!aitHeader">转发</v-contextmenu-item>
+            <v-contextmenu-item @click="deleteMsg" v-if="!aitHeader">删除</v-contextmenu-item>
+            <v-contextmenu-item @click="ait" v-if="aitHeader">@他</v-contextmenu-item>
+            <v-contextmenu-item
+                    @click="revocateMsg"
+                    v-if="new Date().getTime()-msg.time<120000&&msg.flow=='out'&&!aitHeader"
+            >撤回
+            </v-contextmenu-item>
+        </v-contextmenu>
+        <videoPlear v-show="blean" v-model="blean" :url="url"></videoPlear>
+        <vin v-if="vin.show" :vin="vin.id"></vin>
+        <order v-if="order.orderShow" :detailInfoId='order.num' :autoSellor="!order.isBuyer"
+               @showDetail="order.orderShow=false"></order>
+        <el-dialog
+                width="80%"
+                top="15vh"
+                :center="true"
+                custom-class="inventoryQuote"
+                v-if="inventoryQuote"
+                :visible.sync="inventoryQuote">
+            <h3 slot="title">报价</h3>
+            <inventory-quote :msgContent="quote" @ok="inventoryQuote=false"></inventory-quote>
+        </el-dialog>
+        <commitOrder v-if="selectOrder.show" :id="selectOrder.id" v-model="selectOrder.show"></commitOrder>
     </div>
 </template>
 <script>
-import Bus from "@/utils/bus.js";
-import { mapGetters } from "vuex";
-import splitPane from "vue-splitpane";
-import ChatEditor from "@/components/Chat/ChatEditor.vue";
-import { setTimeout, setInterval, clearTimeout } from "timers";
-import util from "@/utils";
-import ChatItem from "@/components/Chat/ChatItem";
-import videoPlear from "@/components/Chat/videoPlear";
-export default {
-  components: {
-    splitPane,
-    ChatEditor,
-    ChatItem,
-    videoPlear
-  },
-  data() {
-    return {
-      checkList: [],
-      partsData: {
-        show: false
-      },
-      paymentData: {
-        show: false
-      },
-      data: [],
-      ins: [],
-      out: [],
-      blean: false,
-      url: "",
-      // type: "",
-      isEmojiShown: false
-    };
-  },
-  props: {
-    type: String,
-    msglist: {
-      type: Array,
-      default: []
-    },
-    myInfo: {
-      type: Object,
-      default: {}
-    },
-    isHistory: {
-      type: Boolean,
-      default: false
-    },
-    msgSectionShow: {
-      type: Boolean,
-      default: false
-    },
-    userInfos: {
-      type: Object,
-      default: {}
-    },
-    msgdialogVisible:{
-      type:Boolean,
-      default:true
-    }
-  },
-  watch: {
-    msgSectionShow() {
-      if (this.msgSectionShow) {
-        this.msgShow = true;
-      } else {
-        this.msgShow = false;
-      }
-    },
-     isbg(val){
-       val?null:this.checkList=[];
-     }
-  },
-  methods: {
-    selectMore() {
-      // this.msgShow = true;
-      // this.$emit("tell-more");
-    },
-    getURL(obj) {
-      this.url = obj.url;
-      this.blean = obj.blean;
-    },
-    selectEmoji(code) {
-      this.showEmoji = false;
-      this.value += code;
-      console.log("code", code);
-    },
-    resize() {
-      console.log("resize");
-    },
-    getHistoryMsgs() {
-      if (this.canLoadMore) {
-        this.$store.dispatch("getHistoryMsgs", {
-          scene: this.scene,
-          to: this.to
-        });
-      }
-    },
-    msgLoaded() {
-      console.log("chatlist--msgLoaded");
-    },
-    updateSelectContent() {
-      this.$emit("selMsg",this.checkList)
-      console.log(this.checkList, "选择的消息");
-    }
-  },
-  computed: {
-    ...mapGetters(["msgs"]),
-    ...mapGetters(["im"]),
-    canLoadMore() {
-      return !this.$store.state.im.noMoreHistoryMsgs;
-    },
-    scene() {
-      return util.parseSession(this.sessionId).scene;
-    },
-    msgShow() {
-      // console.log(this.$store.state.im.isShowSelectBox);
-      return this.$store.state.im.isShowSelectBox;
-    },
-    isbg(){
-      let flag=this.msgdialogVisible;
-      return flag;
-    }
-  },
+    import {getBase64} from "@/api/im/baseMethod";
+    import Bus from "@/utils/bus.js";
+    import {mapGetters} from "vuex";
+    import ChatEditor from "@/components/Chat/ChatEditor.vue";
+    import util from "@/utils";
+    import ChatItem from "@/components/Chat/ChatItem";
+    import videoPlear from "@/components/Chat/videoPlear";
+    import {getLocal,setLocal} from "../../utils/localstorage";
+    import order from "../myOrder/orderDetailNormal"
+    import vin from "@/views/quote/model/framNumberCopy";
+    import inventoryQuote from './template/listQuote'
+    import im from "../../store/modules/im";
+    import commitOrder from './template/order_buyer_create_order'
 
-  updated() {
-    // this.scroll();
-    // let msgbox = document.getElementById("msgbox");
-    // let img = msgbox.getElementsByTagName("img");
-    // img.forEach(item => {
-    //   item.onload = () => {
-    //     msgbox.scrollTop = msgbox.scrollHeight;
-    //   };
-    // });
-    // msgbox.scrollTop = msgbox.scrollHeight;
-    window.document.body.addEventListener("click", () => {
-      this.isEmojiShown = false;
-    });
-  },
-  mounted() {
-    console.log(this.msgdialogVisible,"当前布尔值")
-    var msgdata = null;
-    var obj = {};
-    Bus.$on("sendmsgdata", result => {
-      if (result !== null || result !== undefined) {
-        msgdata = result;
-      }
-    });
-    Bus.$on("deleteMsg", content => {
-      if (content !== null || content !== undefined) {
-        if (msgdata !== null) {
-          console.log("content", content);
-          console.log(msgdata, "msgdata");
-          msgdata.forEach((el, index) => {
-            if (el.idClient == content) {
-              obj.msg = msgdata[index];
-              this.$store.dispatch("deleteMsg", obj);
-              this.$emit("removeMsg",index)
+    const {clipboard, nativeImage, ipcRenderer} = require("electron");
+    export default {
+        components: {
+            ChatEditor,
+            ChatItem,
+            videoPlear,
+            vin,
+            order,
+            inventoryQuote,
+            commitOrder
+        },
+        data() {
+            return {
+                inventoryQuote: false,
+                checkList: [],
+                blean: false,
+                url: "",
+                isEmojiShown: false,
+                num: 1,
+                msgBoxHeight: 0,
+                msg: {},
+                textMsg: "",
+                lookHistory: false,
+                vin: {
+                    id: "",
+                    show: false
+                },
+                aitHeader: false,
+                msglistMore: [],
+                curAudio: new Audio(),
+                curAudioInfo: null,
+                order: {
+                    orderShow: false,
+                    isBuyer: null,
+                    num: ''
+                },
+                quote: null,
+                hasAuth:false,
+                selectOrder: {
+                    show: false,
+                    id: null
+                }
+            };
+        },
+        props: {
+            type: String,
+            msglist: {
+                type: Array,
+                default: []
+            },
+            myInfo: {
+                type: Object,
+                default: {}
+            },
+            isHistory: {
+                type: Boolean,
+                default: false
+            },
+            msgSectionShow: {
+                type: Boolean,
+                default: false
+            },
+            userInfos: {
+                type: Object,
+                default: {}
+            },
+            msgdialogVisible: {
+                type: Boolean,
+                default: true
             }
-          });
+        },
+        watch: {
+            msgSectionShow() {
+                if (this.msgSectionShow) {
+                    this.msgShow = true;
+                } else {
+                    this.msgShow = false;
+                }
+            },
+            lastMsg(val) {
+                if (val.flow == 'out') {
+                    this.lookHistory = false;
+                }
+            },
+            currSessionId() {this.hasAuth=false;
+                setLocal('hasAuth',0)
+                this.num = 1;
+                this.lookHistory = false;
+            },
+            isbg(val) {
+                val ? null : (this.checkList = []);
+            }
+        },
+        methods: {
+            quoteShow(val) {
+                this.quote = val;
+                this.inventoryQuote = true;
+            },
+            realOrder(msg) {
+                let myshop = JSON.parse(getLocal('myStore'))
+                if (msg.buyerId == myshop.userId || msg.sellerId == myshop.userId) {
+                    this.order = {
+                        orderShow: true,
+                        isBuyer: msg.buyerId == myshop.userId,
+                        num: msg.orderNum
+                    }
+                } else {
+                    this.$message.error('不能查看他人订单')
+                }
+            },
+            showOrder(msg) {
+                let myshop = JSON.parse(getLocal('myStore'))
+                if (msg.buyerId == myshop.userId) {
+                    this.selectOrder = {
+                        show: true,
+                        id: msg.orderId
+                    }
+                } else if (msg.sellerId == myshop.userId) {
+                    ipcRenderer.send('orderWindowCreated', JSON.stringify({
+                        userId: myshop.userId,
+                        accid: this.$store.state.im.currSessionId.substring(4),
+                        orderId: msg.orderId
+                    }))
+                } else {
+                    this.$message.error('不能查看他人订单')
+                }
+            },
+            play(obj) {
+                this.curAudioInfo = obj
+                if (obj.do == 'play') {
+                    this.curAudio.volume = 0.3;
+                    this.curAudio.src = obj.src;
+                    this.curAudio.play();
+                    this.curAudio.onended = () => {
+                        this.curAudioInfo.do = 'end';
+                    }
+                } else {
+                    this.curAudio.pause();
+                    this.curAudioInfo.do = 'pause'
+                }
+            },
+            ait() {
+                Bus.$emit("aitOne", this.msg);
+            },
+            vinShow(vin) {
+                this.vin.show = true;
+                this.vin.id = vin.vin;
+            },
+            cancalBable(msg, e) {
+                if (
+                    msg.type == "tip" ||
+                    msg.type == "timeTag" ||
+                    msg.type == "notification"
+                ) {
+                    e.stopPropagation();
+                }
+            },
+            contextmenu(event, msg) {
+                if (event.target.className == "icon u-circle") {
+                    this.aitHeader = true;
+                } else {
+                    this.aitHeader = false;
+                }
+                this.msg = msg;
+                // 处理文本消息
+                if (msg.type == "text") {
+                    let a = window.getSelection();
+                    this.textMsg =
+                        msg.text.substring(a.anchorOffset, a.extentOffset) || msg.text;
+                } else if (msg.type == "image" && msg.file.url) {
+                    this.msgTypeState = "image";
+                    this.imgUrl = msg.file.url;
+                }
+            },
+            revocateMsg() {
+                // 在会话聊天页
+                console.error("点击撤回");
+                if (this.$store.state.im.currSessionId) {
+                    if (this.msg) {
+                        if (this.msg.type === "robot") {
+                            return;
+                        }
+                        // 自己发的消息
+                        if (this.msg.flow === "out") {
+                            this.$store.dispatch("revocateMsg", {
+                                idClient: this.msg
+                            });
+                        }
+                    }
+                }
+            },
+            deleteMsg() {
+                Bus.$emit("deleteMsg", this.msg.idClient);
+            },
+            retransmissionMsg() {
+                if (this.retransmission !== null) {
+                    Bus.$emit("openSendContactBox", this.msg);
+                }
+            },
+            selectorMore() {
+                // 开启多选禁用图片放大功能
+                this.$store.commit("updateSelectBox", {
+                    isShow: true
+                });
+                this.$nextTick(() => {
+                    let dom = this.$refs.contextmenu;
+                    dom.style = {
+                        display: "none",
+                        tip: 0,
+                        left: 0
+                    };
+                    dom = null;
+                });
+            },
+            copy() {
+                if (this.$store.state.im.currSessionId) {
+                    if (this.textMsg) {
+                        clipboard.writeText(this.textMsg);
+                        this.textMsg = "";
+                    }
+                    if (this.imgUrl) {
+                        getBase64(this.imgUrl, dataURL => {
+                            clipboard.writeImage(nativeImage.createFromDataURL(dataURL));
+                            this.imgUrl = "";
+                        });
+                    }
+                }
+            },
+            getURL(obj) {
+                this.url = obj.url;
+                this.blean = obj.blean;
+            },
+            selectEmoji(code) {
+                this.value += code;
+            },
+            resize() {
+            },
+            getStyle(dom, style) {
+                return parseInt(getComputedStyle(dom, null)[style]);
+            },
+            getHistoryMsgs() {
+                this.lookHistory = true;
+                this.msgBoxHeight = this.getStyle(this.$refs.msglist, "height");
+                this.num++;
+                this.$store.dispatch("getLocalMsgs", {
+                    sessionId: this.$store.state.im.currSessionId,
+                    end: this.num * 20
+                });
+            },
+            msgLoaded() {
+                this.scroll();
+            },
+            updateSelectContent() {
+                this.$emit("selMsg", this.checkList);
+            },
+            scroll() {
+                this.$nextTick(() => {
+                    if (this.lookHistory) {
+                        if (this.msgBoxHeight) {
+                            document.getElementById("msgbox").scrollTop =
+                                this.getStyle(this.$refs.msglist, "height") - this.msgBoxHeight;
+                        }
+                        this.msgBoxHeight = 0;
+                    } else {
+                        let msgbox = document.getElementById("msgbox");
+                        msgbox.scrollTop = msgbox.scrollHeight;
+                        msgbox = null;
+                    }
+                });
+            },
+            returnFalse(el) {
+                this.isEmojiShown = false;
+                if (el.target.className == "bgc") {
+                    this.vin.show = false;
+                }
+            }
+        },
+        computed: {
+            ...mapGetters(["msgs"]),
+            ...mapGetters(["im"]),
+            canLoadMore() {
+                return this.$store.state.im.noMoreHistoryMsgs;
+            },
+            lastMsg() {
+                return this.$store.state.im.currSessionLastMsg;
+            },
+            scene() {
+                return util.parseSession(this.sessionId).scene;
+            },
+            msgShow() {
+                return this.$store.state.im.isShowSelectBox;
+            },
+            currSessionId() {
+                return this.$store.state.im.currSessionId;
+            },
+            isbg() {
+                let flag = this.msgdialogVisible;
+                return flag;
+            },
+        },
+        beforeUpdate() {
+            window.document.body.removeEventListener("click", this.returnFalse);
+        },
+        updated() {
+            window.document.body.addEventListener("click", this.returnFalse);
+        },
+        mounted() {
+            this.hasAuth=getLocal('hasAuth')==1;
+            window.VueEvent.$on('look', (tradNo) => {
+                this.order = {
+                    orderShow: true,
+                    isBuyer: true,
+                    num: tradNo
+                }
+            })
+            this.msglistMore = this.msglist;
+            ipcRenderer.send("openPicWindow");
+            var msgdata = null;
+            Bus.$on("sendmsgdata", result => {
+                if (result !== null || result !== undefined) {
+                    msgdata = result;
+                }
+            });
+            Bus.$on("deleteMsg", content => {
+                this.msglist.forEach((el, index) => {
+                    if (el.idClient == content) {
+                        this.$store.dispatch("deleteMsg", {msg: el});
+                        this.$emit("removeMsg", index);
+                    }
+                });
+            });
+        },
+        beforeDestroy() {
+            window.document.body.removeEventListener("click", this.returnFalse);
+            Bus.$off("sendmsgdata");
+            Bus.$off("deleteMsg");
         }
-      }
-    });
-  }
-};
+    };
 </script>
 <style scoped lang="scss">
-.chatlist {
-  height: 100%;
-  overflow: auto;
-  background-color: #F3F3F3;
-}
-// .top {
-//   width: 100%;
-//   height: 100%;
-//   overflow: auto;
-//   padding: 10px 20px;
-// }
-// .top::-webkit-scrollbar {
-//   width: 8px;
-//   height: 14px;
-//   padding: 0 5px;
-// }
+    .warn{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 0;
+        text-align: center;
+        padding-top:40px;
+        span{
+            padding: 5px 0;
+            display: inline-block;
+            text-align: center;
+            width: 368px;
+            background: #ccc;
+            font-size: 18px;
+            color: white;
+            border-radius: 5px;
+            line-height: 25px;
+        }
+    }
+    @mixin zIndex{
+        position: relative;
+        z-index: 5;
+    }
+    .chatlist {
+        height: 100%;
+        background-color: #f3f3f3;
+    }
 
-// .top::-webkit-scrollbar-thumb {
-//   border-radius: 999px;
-//   border: 1px solid transparent;
-// }
+    .moreMsg {
+        text-align: center;
+        color: #00f;
+        padding: 15px;
+        cursor: pointer;
+        font-size: 12px;
+        @include zIndex;
+    }
 
-// .top::-webkit-scrollbar-thumb {
-//   background-color: #ccc;
-//   min-height: 20px;
-//   background-clip: content-box;
-// }
-// .chatlist .t-c-u-left {
-//   margin-right: 40px;
-//   text-align: left;
-// }
-// .chatlist .t-c-u-right {
-//   margin-top: 20px;
-//   text-align: right;
-//   margin-left: 40px;
-//   .c-img {
-//     float: right !important;
-//   }
-//   .c-conter {
-//     max-width: 590px;
-//     float: right !important;
-//     margin-top: 6px;
-//   }
-// }
-// .chatlist {
-//   height: calc(100% - 200px);
-//   background-color: #f3f3f3;
-//   overflow-y: scroll;
-//   .isMoreHistory {
-//     list-style: none;
-//     text-align: center;
-//     cursor: pointer;
-//   }
+    .noMoreMsg {
+        color: #ccc;
+        @include zIndex;
+    }
 
-/* 右侧离场 动画   enter入场动画  leave离开动画 */
-// .fade-leave-active,
-// .fade-enter-active {
-//   transition: all 2s;
-// }
 
-// .fade-enter {
-//   transform: translate(-100%, 0);
-//   opacity: 0;
-// }
-
-// .fade-enter-to {
-//   transform: translate(0, 0);
-//   opacity: 1;
-// }
-// .fade-leave {
-//   transform: translate(0, 0);
-//   opacity: 1;
-// }
-// .fade-leave-to {
-//   transform: translate(-100%, 0);
-//   opacity: 0;
-// }
-// }
-#msgbox {
-  background: #f3f3f3;
-}
+    #msgbox {
+        background: #f3f3f3;
+        transition: all 0.3s;
+    }
 </style>
-
+<style lang="scss">
+    .vue-splitter-container {
+        .el-dialog__wrapper {
+            left: 180px;
+        }
+        .el-dialog__body {
+            padding: 0 25px;
+        }
+    }
+</style>

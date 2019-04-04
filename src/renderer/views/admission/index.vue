@@ -6,7 +6,6 @@
 </template>
 <script>
 import step1 from "./step/step1";
-console.log(step1);
 export default {
   name: "admission",
   data() {

@@ -1,13 +1,14 @@
 <template>
-    <div class="typeCar">
-        <div class="box">
+    <div class="typeCar" >
+        <div class="box" >
+          <i class="el-icon-close" @click="$emit('close')"></i>
             <div class="left">
                 <div v-for="(x,i) in list" :key="i" :class="{sl:(i+1)%2==1,sr:(i+1)%2==0}">
-                    <p @click="changecarList(x.children,i)"><span  :class="{bor:isclass==i}">{{x.name}}</span><i>{{x.children.length}}</i></p>
+                    <p @click="changecarList(x.children,i)"><span  :class="{bor:isclass==i}">{{x.name}}</span><i>{{x.children?x.children.length:0}}</i></p>
                 </div>
             </div>
-            <div class="right">
-                <div v-for="x in carList" :key="x.id" @click="carid(x)">
+            <div class="right scrollbar">
+                <div v-for="x in carList" :key="x.id" @click="carid(x)" v-if="carList.length">
                     <img :src="x.logo" alt="图片加载失败">
                     <p>{{x.name}}</p>
                 </div>
@@ -17,14 +18,14 @@
 </template>
 <script>
 import { setLocal, getLocal } from "@/utils/localstorage";
-import request from "@/utils/request";
-import Bus from "@/utils/bus";
+import { getcalList } from "@/api/admission/admission";
 export default {
   data() {
     return {
       list: null,
       carList: null,
-      isclass: 0
+      isclass: 0,
+      show:true
     };
   },
   methods: {
@@ -38,7 +39,6 @@ export default {
           break;
         }
       }
-      console.log(node);
     },
     changecarList(x, i) {
       this.carList = x;
@@ -53,10 +53,7 @@ export default {
       this.list = JSON.parse(getLocal("carlist"));
       this.carList = this.list[0].children;
     } else {
-      request({
-        url: "/vehicle/seller/manage/scope/all/tree",
-        method: "get"
-      }).then(res => {
+     getcalList().then(res => {
         setLocal("carlist", JSON.stringify(res.data));
         this.list = res.data;
         this.carList = this.list[0].children;
@@ -85,6 +82,9 @@ export default {
     position: relative;
     line-height: 55px;
     border-bottom: 1px solid transparent;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     span {
       padding-bottom: 12px;
     }
@@ -109,15 +109,20 @@ export default {
   float: left;
   padding-top: 20px;
   width: 600px;
-  height: 390px;
   overflow: auto;
   cursor: pointer;
+  height: 546px;
+  div:hover{
+    border:1px solid #ccc;
+  }
   div {
     float: left;
     width: 120px;
     height: 120px;
     text-align: center;
     margin: 10px;
+    padding-top: 20px;
+    border:1px solid transparent;
     img {
       display: inline-block;
       width: 43px;
@@ -143,10 +148,18 @@ export default {
   align-items: center;
 }
 .box {
-  background: #dedede;
+  background: #fff;
   border-radius: 5px;
   overflow: hidden;
   box-shadow: 5px -1px 15px -3px #000;
+  position: relative;
+  .el-icon-close{
+    position: absolute;
+    right: 10px;
+    top:5px;
+    font-size: 25px;
+    cursor: pointer;
+  }
 }
 .left .bor {
   border-bottom: 1px solid #ff6749;

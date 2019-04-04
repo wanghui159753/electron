@@ -1,98 +1,79 @@
 <template>
-    <div class="quote scrollbar">
+    <div class="quote">
         <div class="quote-top">
-            <el-menu :default-active="activeIndex" :router="true" class="el-menu-demo" mode="horizontal" @select="handleSelect">
-                <el-menu-item index="/quote/index/one">急需报价</el-menu-item>
-                <el-menu-item index="/quote/index/two">与我相关</el-menu-item>
-            </el-menu>
-            <div class="quote-top-right">
-                <CurrentUserInfo class="userHead"></CurrentUserInfo>
+            <p></p>
+            <div class="center">
+                <div @click="$router.push('/quote/index/one');num=1;" :class="{borBg:num==1}">急需报价</div>
+                <div @click="$router.push('/quote/index/two');num=2" :class="{borBg:num==2}" >与我相关</div>
             </div>
-        </div>
-        <router-view></router-view>
+            <p></p>
+        </div>  
+        <keep-alive>
+            <router-view></router-view>
+        </keep-alive>
     </div>
 </template>
 <script>
-import CurrentUserInfo from "@/components/CurrentUserInfo/CurrentUserInfo.vue";
-export default {
-  name: "Quote",
-  data() {
-    return {
-      activeIndex: "/quote/index/one"
+    export default {
+        name: "Quote",
+        data() {
+            return {
+                activeIndex: "/quote/index/one",
+                num:1
+            };
+        },
+        methods: {
+            handleSelect(val) {
+            }
+        },
+        watch: {
+            activeIndex() {
+                this.activeIndex = this.$route.path;
+            }
+        },
+        created() {
+            this.activeIndex = this.$route.path;
+        }
     };
-  },
-  components: {
-    CurrentUserInfo
-  },
-  methods: {
-    handleSelect(val) {
-      console.log(val);
-    }
-  },
-  watch: {
-    activeIndex() {
-      this.activeIndex = this.$route.path;
-    }
-  },
-  created() {
-    this.activeIndex = this.$route.path;
-  }
-};
 </script>
 <style lang="scss" scoped>
-.quote {
-  background-color: #f3f3f3;
-  height: calc(100vh - 80px);
-  ul {
-    li {
-      line-height: 78px !important;
-      height: 78px !important;
-    }
-  }
-  .quote-top {
-    background-color: #f3f3f3;
-    position: relative;
-    height: 78px;
-    line-height: 78px;
-    .el-menu {
-      display: flex;
-      justify-content: center;
-      border: none;
-      .el-menu-item {
-        color: #291c1c;
-        font-size: 22px;
-        height: auto;
-        line-height: 78px;
-      }
-    }
-    .quote-top-right {
-      width: 200px;
-      position: absolute;
-      right: 0px;
-      top: 15px;
-      display: flex;
-      justify-content: flex-end;
-      .quote-top-right-i {
-        width: 40px;
-        height: 40px;
-        border-radius: 50px;
-        img {
-          width: 100%;
-          border-radius: 50px;
+    .quote {
+        background-color: #f3f3f3;
+        height: calc(100vh - 30px);
+        ul {
+            li {
+                line-height: 58px !important;
+                height: 58px !important;
+            }
         }
-      }
-      .quote-top-right-t {
-        line-height: 78px;
-      }
+        .quote-top {
+            background-color: #f3f3f3;
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            height: 58px;
+            line-height: 58px;
+            .center {
+                display: flex;
+                justify-content: center;
+                border: none;
+                text-align: center;
+                cursor: pointer;
+                div {
+                    width: 134px;
+                    color: #291c1c;
+                    font-size: 18px;
+                    height: auto;
+                    font-weight: 600;
+                    line-height: 58px;
+                    border-bottom: 4px solid transparent;
+                }
+            }
+        }
     }
-  }
-}
+    .borBg{
+        border-bottom: 4px solid #FC684F !important;
+        color:#FC684F !important;
+    }
 </style>
-<style>
-.userHead .infoBox img {
-  border-radius: 5px !important;
-}
-.userHead .infoAccount p{
-  font-size: 13px;
-}
-</style>
+

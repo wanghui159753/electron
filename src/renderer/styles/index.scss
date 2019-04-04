@@ -58,6 +58,7 @@ a:hover {
   right: 0;
   top: 0;
   bottom: 0;
+  overflow: hidden;
 }
 
 .app-container {
@@ -73,4 +74,43 @@ a:hover {
 .flexbetween{
   display: flex !important;
   justify-content: space-between !important;
+}
+
+.payCode {
+  .el-dialog__body {
+    padding: 0;
+  }
+  .el-dialog__headerbtn{
+    top: 10px;
+    right: 13px;
+    font-size: 20px;
+  }
+  .el-dialog__header {
+    padding: 12px;
+    background: #F5F5F5;
+    font-size: 18px;
+    font-weight: bold;
+  }
+}
+
+.intervention {
+  .el-dialog__body {
+    padding: 10px 25px;
+  }
+}
+
+.afterSaleName {
+  .el-dialog__body {
+    text-align: center;
+  }
+  .el-radio__label {
+    font-size: 16px;
+  }
+  .el-radio__inner {
+    width: 18px;
+    height: 18px;
+  }
+  .el-button {
+    margin: 10px;
+  }
 }

@@ -1,96 +1,105 @@
 <template>
-    <div>
-        <div class="line">
-            <p>认证信息 <span>(<i class="el-icon-star-on"></i>为必填项)</span></p>
-        </div>
-        <el-form ref="form" label-width="110px" :model="forms" class="formTab" :rules="rules">
-            <el-form-item label="身份选择" prop="idChoose">
-                <el-radio-group v-model="forms.idChoose" fill='#FF6749'>
-                    <el-radio :label="0">个人</el-radio>
-                    <el-radio :label="1">商家</el-radio>
-                </el-radio-group>
-            </el-form-item>
-            <el-form-item label="公司名称" class="uslabel" prop="names">
-                <el-input placeholder="请输入公司名称或个人姓名" v-model="forms.names"></el-input>
-            </el-form-item>
-            <el-form-item label="证件号" class="uslabel" prop="num">
-                <el-input placeholder="请输入证件号" v-model="forms.num"></el-input>
-            </el-form-item>
-            <el-form-item label="主营分类" class="uslabel" prop="type">
-                <el-input placeholder="请选择品牌  如：奔驰、宝马" @focus="togoshow" v-model="forms.type">
-                </el-input>
-            </el-form-item>
-            <el-form-item label="所在地区" class="uslabel" prop="locate">
-                <el-cascader
-                        :options="options"
-                        :show-all-levels="true"
-                        placeholder="请选择地区"
-                        filterable
-                        @change="chang"
-                        v-model="forms.locate"
-                ></el-cascader>
-            </el-form-item>
-            <el-form-item label="详细地址" class="uslabel" prop="addresses">
-                <el-input placeholder="请输入详细地址" v-model="forms.addresses"></el-input>
-            </el-form-item>
-            <el-form-item label="联系号码" class="uslabel" prop="phone">
-                <el-input placeholder="请输入联系电话" v-model="forms.phone"></el-input>
-                <el-button type="primary" class='vCode' @click="sendCode" :disabled="isdisabled"
-                           :class="{bg:!isdisabled}"
-                            v-if="!ischangeNum"
-                           >{{yzm}}
-                </el-button>
-            </el-form-item>
-            <el-form-item label="手机验证码" class="uslabel" prop="paperNum" v-if="!ischangeNum">
-                <el-input placeholder="请输入正确有效的6位手机验证码" v-model="forms.paperNum" @blur="getpapers"></el-input>
-            </el-form-item>
-            <el-form-item label="头像" class="uslabel" prop="headPic">
-                <div class="headPic">
-                    <p>仅支持JPG、PNG格式</p>
-                    <label>
-                        <img :src="logo" ref='img0' alt="图片加载失败">
-                        <input type="file" class="dis" @change="readPic($event,0)">
-                    </label>
-                </div>
-            </el-form-item>
-            <el-form-item prop="Agreement" class="posi">
-                <el-checkbox v-model="forms.Agreement">我已阅读并同意<a href="" class="xieyi">《心动配讯平台服务协议》</a></el-checkbox>
-            </el-form-item>
-            <el-form-item class="el posi">
-                <el-button type="primary" @click.native="next" class="next">下一步</el-button>
-            </el-form-item>
-        </el-form>
-        <car-list v-show="iscar" @getcar="getcar"></car-list>
-        <div class="clips" v-show="clipshow">
-            <vueCropper
-                    ref="cropper"
-                    :img="clip.img"
-                    :outputSize="1"
-                    :outputType="clip.outputType"
-                    :canScale="true"
-                    :autoCrop="true"
-                    :autoCropWidth="130"
-                    :autoCropHeight="130"
-                    :fixedBox="true"
-                    :canMove="true"
-                    :canMoveBox="false"
-            ></vueCropper>
-            <div>
-                <el-button type="primary" @click="clipshow=false">取消</el-button>
-                <el-button type="primary" @click="up">裁切</el-button>
-            </div>
-        </div>
+  <div>
+    <div class="line">
+      <p>
+        认证信息
+        <span>
+          (
+          <i class="el-icon-star-on"></i>为必填项)
+        </span>
+      </p>
     </div>
+    <el-form ref="form" label-width="110px" :model="forms" class="formTab" :rules="rules">
+      <el-form-item label="选择类型" prop="idChoose">
+        <el-radio-group v-model="forms.idChoose" fill="#FF6749">
+          <el-radio :label="0">个人</el-radio>
+          <el-radio :label="1">企业</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="公司名称" class="uslabel" prop="names">
+        <el-input placeholder="请输入公司名称或个人姓名" v-model="forms.names"></el-input>
+      </el-form-item>
+      <el-form-item label="证件号" class="uslabel" prop="num">
+        <el-input placeholder="请输入证件号" v-model="forms.num"></el-input>
+      </el-form-item>
+      <el-form-item label="主营分类" class="uslabel" prop="type">
+        <el-input placeholder="请选择品牌  如：奔驰、宝马" @focus="togoshow" v-model="forms.type"></el-input>
+      </el-form-item>
+      <el-form-item label="所在地区" class="uslabel" prop="locate">
+        <el-cascader
+          :options="options"
+          :show-all-levels="true"
+          placeholder="请选择地区"
+          filterable
+          @change="chang"
+          v-model="forms.locate"
+        ></el-cascader>
+      </el-form-item>
+      <el-form-item label="详细地址" class="uslabel" prop="addresses">
+        <el-input placeholder="请输入详细地址" v-model="forms.addresses"></el-input>
+      </el-form-item>
+      <el-form-item label="手机号码" class="uslabel" prop="phone">
+        <el-input placeholder="请输入联系电话" v-model="forms.phone"></el-input>
+        <el-button
+          type="primary"
+          class="vCode"
+          @click="sendCode"
+          :disabled="isdisabled"
+          :class="{bg:!isdisabled}"
+          v-if="!ischangeNum"
+        >{{yzm}}</el-button>
+      </el-form-item>
+      <el-form-item label="手机验证码" class="uslabel" prop="paperNum" v-if="!ischangeNum">
+        <el-input placeholder="请输入正确有效的6位手机验证码" v-model="forms.paperNum" @blur="getpapers"></el-input>
+      </el-form-item>
+      <el-form-item label="头像" class="uslabel" prop="headPic">
+        <div class="headPic">
+          <p>仅支持JPG、PNG格式</p>
+          <label id="upHead">
+            <img :src="logo" ref="img0" alt="图片加载失败">
+            <input type="file" class="dis" @change="readPic($event,0)">
+          </label>
+        </div>
+      </el-form-item>
+      <el-form-item prop="Agreement" class="posi">
+        <el-checkbox v-model="forms.Agreement">
+          我已阅读并同意
+          <a href class="xieyi">《心动配讯平台服务协议》</a>
+        </el-checkbox>
+      </el-form-item>
+      <el-form-item class="el posi">
+        <el-button type="primary" @click.native="next" class="next">下一步</el-button>
+      </el-form-item>
+    </el-form>
+    <car-list v-show="iscar" @getcar="getcar"></car-list>
+    <div class="clips" v-show="clipshow">
+      <vueCropper
+        ref="cropper"
+        :img="clip.img"
+        :outputSize="1"
+        :outputType="clip.outputType"
+        :canScale="true"
+        :autoCrop="true"
+        :autoCropWidth="130"
+        :autoCropHeight="130"
+        :fixedBox="true"
+        :canMove="true"
+        :canMoveBox="false"
+      ></vueCropper>
+      <div>
+        <el-button type="primary" @click="clipshow=false">取消</el-button>
+        <el-button type="primary" @click="up">裁切</el-button>
+      </div>
+    </div>
+  </div>
 </template>
 <script>
 import VueCropper from "vue-cropper";
 import { countdown } from "@/utils/countdown";
 import carList from "./car.vue";
 import request from "@/utils/request";
-
+import { getOne } from "@/api/basicData/basicData.js";
 var req = require("@/utils/upPic");
-import axios from "axios";
-import { readFile } from "fs";
 import { getLocal } from "@/utils/localstorage.js";
 import { getPaper, sendCode, getarea } from "@/api/admission/admission.js";
 
@@ -118,7 +127,7 @@ export default {
       idCard: "",
       mobile: "",
       nature: 0,
-      logo: "@/../../static/image/DefaultUserIcon.png",
+      logo: require("../../../../../static/image/DefaultUserIcon.png"),
       imageUrl: "",
       options: [],
       rules: {
@@ -265,40 +274,40 @@ export default {
       //裁切图片上传
       this.clipshow = false;
       this.$refs.cropper.getCropBlob(data => {
-        req.up({ files: [data] }, this, res => {
-          this.logo = "http://cdn.xindongpeixun.com/" + res.data.data.key;
-        });
+        req.up(
+          { files: [data] },
+          this,
+          res => {
+            this.logo =res
+          },
+          document.getElementById("upHead")
+        );
       });
     },
     // 获取票据
     getpapers() {
-      console.log(12111);
       if (/^\w{6}$/.test(this.forms.paperNum)) {
         getPaper({
           code: this.forms.paperNum,
           mobile: this.forms.phone
         }).then(res => {
           this.forms.paper = res.data.paper;
-          console.log(this.forms.paper);
         });
       }
     },
     //获取验证码
     sendCode() {
       const that = this;
-      console.log(this.$store.state);
       sendCode({
         mobile: this.forms.phone
       })
         .then(res => {
-          console.log(res);
           this.$message.success("发送成功,请注意查收。");
           this.forms.paper = res.data.paper;
           countdown(that, this.isdisabled, "yzm");
         })
         .catch(error => {
           this.$message.error("验证码发送失败");
-          console.log(error);
         });
     },
     getBase64Image(img) {
@@ -389,47 +398,9 @@ export default {
     }
   },
   created() {
-    console.log(this.$route);
     this.$route.params.isone == 1 ? this.modify(this.$route) : null;
     getarea().then(res => {
-      console.log(res);
-      var arr = [];
-      res.data.forEach((item, index) => {
-        var obj = {
-          value: item.id + "," + item.name,
-          label: item.name,
-          children: []
-        };
-        var arr1 = [];
-        item.children.forEach(item1 => {
-          let obj1 = {};
-          if (item1.children) {
-            obj1 = {
-              value: item1.id + "," + item1.name,
-              label: item1.name,
-              children: []
-            };
-            var arr2 = [];
-            item1.children.forEach(item2 => {
-              var obj2 = {
-                value: item2.id + "," + item2.name,
-                label: item2.name
-              };
-              arr2.push(obj2);
-            });
-            obj1.children = arr2;
-          } else {
-            obj1 = {
-              value: item1.id + "," + item1.name,
-              label: item1.name
-            };
-          }
-          arr1.push(obj1);
-        });
-        obj.children = arr1;
-        arr.push(obj);
-      });
-      this.options = arr;
+      this.options = getOne(res.data,3);
     });
   }
 };
@@ -439,7 +410,11 @@ export default {
 .bg {
   background: #ff6749 !important;
 }
-
+#upHead {
+  height: 130px;
+  display: block;
+  width: 130px;
+}
 .clips {
   position: fixed;
   top: 0;
@@ -563,11 +538,11 @@ html .el-loading-parent--hidden {
   font-size: 17px;
 }
 
-.el-radio__label {
+.posi .el-radio__label {
   font-size: 16px;
 }
 
-.el-radio__inner {
+.posi .el-radio__inner {
   width: 24px;
   height: 24px;
 }
@@ -577,16 +552,16 @@ html .el-loading-parent--hidden {
   padding-bottom: 22px;
 }
 
-.el-form-item__content {
+.formTab .el-form-item__content {
   padding-left: 50px;
   position: relative;
 }
 
-.el-form-item uslabel {
+.formTab .el-form-item uslabel {
   margin: 0 auto;
 }
 
-.el-form-item__error {
+.formTab .el-form-item__error {
   margin-left: 50px;
 }
 

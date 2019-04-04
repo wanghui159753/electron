@@ -20,7 +20,8 @@
                     </div>
                     <div class="act">
                         <p class="fix">主营分类</p>
-                        <p class="atc"><span v-for="(i,index) in upus.manageScopeList" :key="index">{{i.labelName}} </span></p>
+                        <p class="atc"><span v-for="(i,index) in upus.manageScopeList"
+                                             :key="index">{{i.labelName}} </span></p>
                     </div>
                     <div class="act">
                         <p class="fix">联系号码</p>
@@ -37,100 +38,101 @@
                         <p class="act">{{upus.address.address}}</p>
                     </div>
                 </div>
-        </div>
-        <div class="documents">
+            </div>
+            <div class="documents" v-if="upus.authList.length">
                 <h2>证件信息</h2>
                 <div class="idCard">
                     <p>身份证</p>
                     <ul>
                         <li @click="lookPic(0,upus.authList[0].imageList)">
                             <div>
-                             <img :src="upus.authList[0].imageList[0]" alt="">
+                                <img :src="upus.authList[0].imageList[0]" alt="">
                             </div>
                             <p>法人身份证（正面）</p>
                         </li>
                         <li @click="lookPic(1,upus.authList[0].imageList)">
                             <div>
-                              <img :src="upus.authList[0].imageList[1]" alt="">
+                                <img :src="upus.authList[0].imageList[1]" alt="">
                             </div>
                             <p>法人身份证（反面）</p>
                         </li>
                         <li @click="lookPic(2,upus.authList[0].imageList)">
                             <div>
-                              <img :src="upus.authList[0].imageList[2]" alt="">
+                                <img :src="upus.authList[0].imageList[2]" alt="">
                             </div>
                             <p>法人手持身份证照</p>
                         </li>
                     </ul>
                 </div>
-            <div class="shoppic">
-                 <p>实地照片</p>
+                <div class="shoppic">
+                    <p>实地照片</p>
                     <ul>
                         <li @click="lookPic(0,upus.authList[1].imageList)">
                             <div>
-                              <img :src="upus.authList[1].imageList[0]" alt="">
+                                <img :src="upus.authList[1].imageList[0]" alt="">
                             </div>
                             <p>店铺门头</p>
                         </li>
                         <li @click="lookPic(1,upus.authList[1].imageList)">
                             <div>
-                              <img :src="upus.authList[1].imageList[1]" alt="">
+                                <img :src="upus.authList[1].imageList[1]" alt="">
                             </div>
                             <p>店铺照片</p>
                         </li>
                         <li @click="lookPic(2,upus.authList[1].imageList)">
                             <div>
-                              <img :src="upus.authList[1].imageList[2]" alt="">
+                                <img :src="upus.authList[1].imageList[2]" alt="">
                             </div>
                             <p>店铺照片</p>
                         </li>
                     </ul>
-            </div>
-            <div>
-                 <p>营业执照 </p>
+                </div>
+                <div>
+                    <p>营业执照 </p>
                     <ul>
                         <li @click="lookPic(3,upus.authList[0].imageList)">
                             <div>
-                              <img :src="upus.authList[0].imageList[3]" alt="">
+                                <img :src="upus.authList[0].imageList[3]" alt="">
                             </div>
                             <p>有效营业执照</p>
                         </li>
                     </ul>
-            </div>
-            <div v-if="upus.authList[2]">
-                 <p  v-if="upus.authList[2].type=='AGENCY'">代理认证</p>
-                 <p v-else>商标认证</p>
+                </div>
+                <div v-if="upus.authList[2]">
+                    <p v-if="upus.authList[2].type=='AGENCY'">代理认证</p>
+                    <p v-else>商标认证</p>
                     <ul>
-                        <li v-for="(x,index) in upus.authList[2]?upus.authList[2].imageList:[]" @click="lookPic(index,upus.authList[2].imageList)" :key="index">
+                        <li v-for="(x,index) in upus.authList[2]?upus.authList[2].imageList:[]"
+                            @click="lookPic(index,upus.authList[2].imageList)" :key="index">
                             <div>
-                              <img :src="x" alt="">
+                                <img :src="x" alt="">
                             </div>
                             <p v-if="upus.authList[2].type=='AGENCY'">代理认证</p>
                             <p v-else>商标认证</p>
                         </li>
                     </ul>
-            </div>
-            <div v-if="upus.authList[3]">
-                 <p>商标认证</p>
+                </div>
+                <div v-if="upus.authList[3]">
+                    <p>商标认证</p>
                     <ul>
-                        <li v-for="(x,index) in upus.authList[3]?upus.authList[3].imageList:[]" @click="lookPic(index,upus.authList[3].imageList)" :key="index">
+                        <li v-for="(x,index) in upus.authList[3]?upus.authList[3].imageList:[]"
+                            @click="lookPic(index,upus.authList[3].imageList)" :key="index">
                             <div>
-                              <img :src="x" alt="">
+                                <img :src="x" alt="">
                             </div>
                             <p>商标认证</p>
                         </li>
                     </ul>
+                </div>
             </div>
-        </div>    
+        </div>
     </div>
-</div>
 </template>
 <script>
-import request from "@/utils/request";
 import { getLocal } from "@/utils/localstorage";
 import { setInterval, clearInterval } from "timers";
-import viewer from "viewerjs/dist/viewer.min.js";
-import "viewerjs/dist/viewer.min.css";
+import { lookPhoto } from "@/api/admission/admission";
+
 export default {
   data() {
     return {
@@ -145,23 +147,7 @@ export default {
       this.$router.push("/admission/index/Record");
     },
     lookPic(i, arr) {
-      let box = document.createElement("div");
-      arr.forEach(item => {
-        let img = document.createElement("img");
-        img.src = item;
-        box.appendChild(img);
-      });
-      let showimg = new viewer(box, {
-        hidden() {
-          this.viewer.destroy();
-          document.body.removeChild(box);
-        }
-      });
-      box.style.display = "none";
-      document.body.appendChild(box);
-      showimg.view(i);
-      showimg.show();
-      showimg.full();
+      lookPhoto(i, arr);
     }
   },
   created() {
@@ -176,7 +162,6 @@ export default {
         }
       }, 100);
     }
-    console.log(this.upus, "审核结果");
   }
 };
 </script>
@@ -188,6 +173,24 @@ export default {
     border-bottom: 1px solid #ff6749;
     line-height: 46px;
     text-align: left;
+  }
+}
+@mixin ptag {
+  div {
+    overflow: hidden;
+    p {
+      float: left;
+      width: 120px;
+      text-align: left;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      line-height: 30px;
+    }
+    .act {
+      width: 326px;
+      color: #343434;
+    }
   }
 }
 .piczoo .shopinfo {
@@ -230,24 +233,7 @@ export default {
         }
       }
     }
-    @mixin ptag {
-      div {
-        overflow: hidden;
-        p {
-          float: left;
-          width: 120px;
-          text-align: left;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          line-height: 30px;
-        }
-        .act {
-          width: 326px;
-          color: #343434;
-        }
-      }
-    }
+
     .info {
       font-size: 16px;
       color: #999;
@@ -267,7 +253,7 @@ export default {
             text-overflow: ellipsis;
             line-height: 30px;
           }
-          .fix{
+          .fix {
             width: 120px;
           }
           .act {
@@ -286,6 +272,22 @@ export default {
       }
     }
   }
+}
+
+.documents {
+  div {
+    .right {
+      float: left;
+      margin-left: 60px;
+      @include ptag;
+    }
+  }
+}
+
+.atc {
+  max-width: 500px;
+  min-width: 150px;
+  color: #343434;
 }
 .documents {
   div {

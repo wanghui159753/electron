@@ -7,6 +7,5 @@ app.on('ready', () => {
     })
     globalShortcut.register("ctrl+v", () => {
         clipboard.readImage()
-        console.log(clipboard.readImage())
     })
 })

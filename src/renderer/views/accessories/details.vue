@@ -1,508 +1,476 @@
 <template>
-<div v-if="info" class="info">
-    <header>
-        <div class="left" @click="back">
-            <img src="@/../../static/image/back.png" alt="">
-            <span>店铺列表</span>
-        </div>
-        <p>店铺详情</p>
-        <div>
-            <img :src="myinfo.logo" alt="图片加载失败">
-            <span>
-                {{myinfo.name}}
-            </span>
-        </div>
-    </header>
-    <div class="stores">
-        <div class="hPic">
+    <div class="ManagementDetail">
+        <header>
+            <div class="left" @click="back">
+                <span class="el-icon-arrow-left">返回</span>
+            </div>
+            <p>店铺详情</p>
+            <div class="right"></div>
+        </header>
+        <div class="content scrollbar" v-if="info">
             <div class="ltd">
-                <img :src="info.logo" alt="加载失败">
-                <div class="ltdName">
-                    <p>{{info.name}}</p>
-                    <div>
-                        <span>浏览{{info.browse}}次</span>
-                        <span>成交{{info.trades}}次 </span>
-                        <span>好评{{info.score}}%</span>
+                <div class="top">
+                    <div class="qrcode">
+                        <div class="ie"></div>
+                        <div id="qrcode2"></div>
+                        <p>店铺二维码</p>
                     </div>
-                    <el-rate
-                      v-model="info.score/20"
-                      disabled
-                    ></el-rate>
+                    <div class="banner" @click="lookPhoto(0,info.bannerList.length?info.bannerList:null)">
+                        <el-carousel indicator-position="outside" height="430px">
+                            <el-carousel-item
+                                    v-for="item in info.bannerList.length?info.bannerList:[{image:defaults}]"
+                                    :key="item.image"
+                            >
+                                <img :src="item.image" alt="图片加载失败">
+                            </el-carousel-item>
+                        </el-carousel>
+                    </div>
+                    <div class="right">
+                        <h4>
+                            {{info.name}}
+                            <span v-if="info.excellent">vip</span>
+                        </h4>
+                        <div class="sort">
+                            <el-rate v-model="score" disabled></el-rate>
+                            <span class="some">{{score}}分</span>
+                            <p>
+                                <span style="border:0">浏览{{info.browse}}次</span>
+                                <span>成交{{info.call}}次</span>
+                            </p>
+                            <div class="ebg">
+                                <el-tooltip placement="top" v-for="x in info.authList" :key="x">
+                                    <span slot="content">{{x}}</span>
+                                    <img src="./../../../../static/image/cash.png" alt v-if="x=='营业执照认证'">
+                                    <img src="./../../../../static/image/id.png" alt v-else-if="x=='身份证认证'">
+                                    <img src="./../../../../static/image/cash2.png" alt v-else-if="x=='已实地认证'">
+                                    <img
+                                            src="./../../../../static/image/cash3.png"
+                                            alt
+                                            v-else-if="x.indexOf('保证金')>-1"
+                                    >
+                                </el-tooltip>
+                            </div>
+                        </div>
+                        <div class="Management">
+                            <span>主营</span>
+                            <p>{{info.manageScope}}</p>
+                        </div>
+                        <div class="connect">
+                            <p>
+                                <img src="@/../../static/image/model.png" width="16" alt>
+                                <span>{{info.mobile}}</span>
+                            </p>
+                            <p>
+                                <img src="@/../../static/image/phone.png" width="16" alt>
+                                <span>{{info.phone||'暂无'}}</span>
+                            </p>
+                        </div>
+                        <div
+                                class="address"
+                        >地址：{{`${info.address.provinceName} ${info.address.cityName} ${info.address.regionName}
+                            ${info.address.address}`}}
+                        </div>
+                    </div>
+                </div>
+                <div class="introduction">
+                    <span>商户介绍:</span>
+                    <p>{{info.sellerIntroduce||'店家很懒，什么都没有'}}</p>
+                </div>
+                <div class="active">
+                    <span>优惠活动：</span>
+                    <p>{{info.activitie||'暂无活动'}}</p>
+                </div>
+                <div class="jubao">
+                    <el-tooltip content="举报">
+                        <img src="@/../../static/image/jubao.png" width="20" height="20" alt>
+                    </el-tooltip>
+                    <el-tooltip :content="info.collect?'取消收藏':'收藏'">
+                        <img src="@/../../static/image/starGray.png" alt v-if="!info.collect" width="20" height="20"
+                             @click="collect">
+                        <img src="@/../../static/image/star.png" width="20" height="20" alt v-else @click="collect">
+                    </el-tooltip>
+                    <el-tooltip content="分享我的店铺">
+                        <img src="@/../../static/image/share.png" height="20" alt="" @click="share">
+                    </el-tooltip>
+                    <p @click="$router.push('/message/index/p2p-'+info.accId)">
+                        <img src="@/../../static/image/newMsg.png" width="24" height="22" alt> 发消息
+                    </p>
                 </div>
             </div>
-            <!-- <div class="line"></div> -->
-            <!-- <div class="mark">
-                <img src="@/../../static/image/mark.png" alt="">
-                <el-button type="primary">店铺二维码</el-button>
-            </div> -->
-            <div class="right">
-                <el-button type="primary" @click="collect" v-if="info.collect">已收藏</el-button>
-                <el-button type="primary" @click="collect" v-else>收藏</el-button>
-                <el-button type="primary">举报</el-button>
+            <div class="Authentication">
+                <h5>认证信息</h5>
+                <ul class="list">
+                    <li v-for="item in info.autoSellerAuthList" :key="item.type">
+                        <div class="img" @click="lookPhoto(0,item.type!='IDENTITY'?item.imageList:null)">
+                            <img :src="item.imageList[0]" alt v-if="item.type!='IDENTITY'">
+                            <img src="@/../../static/image/sfz@2x.png" alt v-else>
+                        </div>
+                        <p>{{authValue(item.type)}}</p>
+                        <div class="el-icon-circle-check">已认证</div>
+                    </li>
+                </ul>
             </div>
+            <div class="diaBox">
+                <el-dialog v-if="shareShow" :visible.sync="shareShow" :modal-append-to-body="false">
+                    <dialogs v-model="shareShow" :addType="'share'" :custom="custom"></dialogs>
+                </el-dialog>
+            </div>
+            <!-- <common :id="info.autoSellerId"></common> -->
         </div>
-        <div class="storeinfo">
-            <div class="info">
-               <div>
-                    <p>售后保证金</p>
-                    <p class="bsdata">5000.00元</p>
-                </div>
-                <div class="line"></div>
-                <div class="moreInfo">
-                    <p>经营范围</p>
-                    <p class="bsdata" :title="info.manageScope">{{info.manageScope}}</p>
-                </div>
-            </div>
-            <div class="info">
-                <div>
-                    <p>优惠活动</p>
-                    <p class="bsdata">{{info.activitie?info.activitie:"暂无活动"}}</p>
-                </div>
-                <div class="line"></div>
-                <div class="moreInfo">
-                    <p>店铺地址 <img src="@/../../static/image/position.png" width="12" height="15" alt=""></p>
-                  <p class="bsdata" :title="info.address.provinceName+info.address.cityName+info.address.regionName+info.address.address">{{info.address.provinceName+info.address.cityName+info.address.regionName+info.address.address}}</p>
-                </div>
-            </div>
-        </div>
-        <ul class="connect">
-            <li v-if="info.phone">
-                <img src="@/../../static/image/tel.png" alt="">
-                <div>
-                    <p>联系电话</p>
-                    <div>{{info.phone}}</div>
-                </div>
-            </li>
-            <li v-if="info.phone" :class="{noborder:!info.wechat||!info.qq}">
-                <img src="@/../../static/image/phone.png" alt="">
-                <div>
-                    <p>手机</p>
-                    <div>{{info.phone}}</div>
-                </div>
-            </li>
-            <li v-if="info.qq" :class="{noborder:!info.wechat}">
-                <img src="@/../../static/image/qq.png" alt="">
-                <div>
-                    <p>QQ</p>
-                    <div>{{info.qq}}</div>
-                </div>
-            </li>
-            <li :class="{noborder:info.phone&&info.qq}"  v-if="info.wechat">
-                <img src="@/../../static/image/wechat.png" alt="">
-                <div>
-                    <p>微信</p>
-                    <div>{{info.wechat}}</div>
-                </div>
-            </li>
-            <li v-if="!(info.phone||info.qq||info.wechat)" class="noborder">
-              暂无联系方式
-            </li>
-        </ul>
     </div>
-    <!-- 轮播图 -->
-    <div class="banner">
-        <el-carousel indicator-position="outside" @click.native="lookPic" v-if="info.bannerList.length" height="430px">
-            <el-carousel-item v-for="item in info.bannerList" :key="item.image">
-            <img :src="item.image" alt="图片加载失败">
-            </el-carousel-item>
-        </el-carousel>
-    </div>
-    <div class="credentials" ref="pic">
-        <h2>认证信息</h2>
-        <ul class="pic">
-            <li>
-                <div class="piclist">
-                  <img :src="info.autoSellerAuthList[0].imageList[0]" alt="图片加载失败" @click="lookPic(0)">
-                </div>
-                <p>身份证/营业执照</p>
-                <div><i class="el-icon-success"></i> 个人版 </div>
-                <el-button type="primary" @click="lookPic(0)">查看</el-button>
-            </li>
-            <li>
-                <div class="piclist">
-                  <img :src="info.autoSellerAuthList[1].imageList[0]" alt="图片加载失败" @click="lookPic(1)">
-                </div>
-                <p>实地认证 </p>
-                <div><i class="el-icon-success"></i> 已认证  </div>
-                <el-button type="primary" @click="lookPic(1)">查看</el-button>
-            </li>
-            <li v-if="info.autoSellerAuthList[2]">
-                <div class="piclist">
-                  <img :src="info.autoSellerAuthList[2].imageList[0]" alt="图片加载失败" @click="lookPic(2)">
-                </div>
-                <p>代理认证</p>
-                <div><i class="el-icon-success"></i> 已认证  </div>
-                <el-button type="primary" @click="lookPic(2)">查看</el-button>
-            </li>
-            <li v-if="info.autoSellerAuthList[3]">
-                <div class="piclist">
-                  <img :src="info.autoSellerAuthList[3].imageList[0]" alt="图片加载失败" @click="lookPic(3)">
-                </div>
-                <p>商标认证 </p>
-                <div><i class="el-icon-success"></i> 已认证  </div>
-                <el-button type="primary" @click="lookPic(3)">查看</el-button>
-            </li>
-        </ul>
-    </div>
-    <!-- 用户评论 -->
-    <comment :id="$route.params.id"></comment>
-</div>
 </template>
 <script>
-import comment from "./compon/comment";
-import request from "@/utils/request";
-import viewer from "viewerjs/dist/viewer.min.js";
-import "viewerjs/dist/viewer.min.css";
-import { getLocal, setLocal } from "@/utils/localstorage";
-export default {
-  components: {
-    comment
-  },
-  data() {
-    return {
-      info: null,
-      myinfo: {}
-    };
-  },
-  methods: {
-    lookPic(i) {
-      console.log(typeof i);
-      let box = document.createElement("div");
-      if (typeof i == "number") {
-        this.info.autoSellerAuthList[i].imageList.forEach(item => {
-          let img = document.createElement("img");
-          img.src = item;
-          console.log(item, "图片");
-          box.appendChild(img);
-        });
-      } else {
-        this.info.bannerList.forEach(item => {
-          let img = document.createElement("img");
-          img.src = item.image;
-          box.appendChild(img);
-        });
-      }
-      let showimg = new viewer(box, {
-        hidden() {
-          this.viewer.destroy();
-          document.body.removeChild(box);
-        }
-      });
-      box.style.display = "none";
-      document.body.appendChild(box);
-      showimg.show();
-      showimg.full();
-    },
-    back() {
-      history.back();
-    },
-    collect() {
-      request({
-        url: "/merchant/auto/seller/push/collect/call",
-        data: {
-          id: 56
+    require("@/../../static/js/qrcode/qrcode.min.js");
+    import QRCode from "qrcodejs2";
+    import common from "./compon/comment";
+    import {lookPhoto} from "@/api/admission/admission.js";
+    import {detail, collect, qrcode} from "@/api/accessories/index.js";
+    import dialogs from "../message/template/chattingGroupAdd";
+
+    const auth = [
+        {key: "IDENTITY", value: "身份/营业执照", style: "primary"},
+        {key: "FIELD", value: "实地认证", style: "success"},
+        {key: "AGENCY", value: "代理认证", style: "warning"},
+        {key: "BRAND", value: "商标认证", style: "danger"}
+    ];
+    const authValue = auth.reduce((acc, cur) => {
+        acc[cur.key] = cur.value;
+        return acc;
+    }, {});
+    export default {
+        components: {common, dialogs},
+        data() {
+            return {
+                score: 5,
+                shareShow: false,
+                info: null,
+                defaults: require("../../../../static/image/defaultBanner.png"),
+                custom: null
+            };
         },
-        method: "post"
-      }).then(res => {
-        this.info.collect
-          ? this.$message.success("已取消收藏")
-          : this.$message.success("收藏成功");
-        this.info.collect = !this.info.collect;
-      });
-    }
-  },
-  created() {
-    this.myinfo = JSON.parse(getLocal("myshop"));
-    console.log(this.myinfo);
-    request({
-      url: "/merchant/auto/seller/detail",
-      params: {
-        autoSellerId: this.$route.params.id
-      },
-      method: "get"
-    }).then(res => {
-      console.log(res);
-      this.info = res.data;
-    });
-  }
-};
+        methods: {
+            share() {
+                this.shareShow = true;
+            },
+            creatQrcode(url) {
+                var qrcode = new QRCode("qrcode2", {
+                    text: url,
+                    width: 106,
+                    height: 106,
+                    colorDark: "#F63A24",
+                    title: '',
+                    alt: "",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                qrcode2.setAttribute('title', '')
+            },
+            //查询二维码
+            initQrcode() {
+                qrcode({autoSellerId: this.info.autoSellerId}).then(res => {
+                    this.creatQrcode(res.data.url);
+                });
+            },
+            back() {
+                history.go(-1);
+            },
+            authValue(level) {
+                return authValue[level];
+            },
+            lookPhoto(i, arr) {
+                if (!arr) return;
+                lookPhoto(i, arr);
+            },
+            detail() {
+                this.$store.commit('setLoading', true)
+                detail({
+                    autoSellerId: this.$route.params.id
+                }).then(res => {
+                    this.$store.commit('setLoading', false)
+                    this.info = res.data;
+                    this.custom = {
+                        sellerId: res.data.autoSellerId,
+                        name: res.data.name,
+                        authList: res.data.authList,
+                        businessScope: res.data.manageScope,
+                        address: res.data.address.provinceName + res.data.address.cityName + res.data.address.regionName + res.data.address.address,
+                        avatar: res.data.logo
+                    }
+                    this.score = this.info.score / 20;
+                    this.initQrcode();
+                });
+            },
+            collect() {
+                collect({id: this.info.autoSellerId}).then(res => {
+                    this.info.collect
+                        ? this.$message.success("已取消收藏")
+                        : this.$message.success("收藏成功");
+                    this.info.collect = !this.info.collect;
+                });
+            }
+        },
+        mounted() {
+            this.detail();
+        }
+    };
 </script>
 <style lang="scss" scoped>
-@mixin h {
-  line-height: 21px;
-  border-left: 3px solid #ff6749;
-  margin: 10px 0;
-  color: #333333;
-  line-height: 35px;
-  padding-left: 1em;
-}
-@mixin shadow {
-  background: #fff;
-  border-radius: 5px;
-  box-shadow: 0px 0px 14px -2px #000;
-}
-@mixin fx {
-  display: flex;
-  justify-content: space-between;
-}
-header {
-  cursor: pointer;
-  @include fx;
-  height: 78px;
-  font-size: 12px;
-  color: #2b3a40;
-  padding: 0 20px;
-  line-height: 78px;
-  p {
-    font-size: 24px;
-  }
-  .left {
-    span {
-      font-size: 18px;
-    }
-    img {
-      width: 29px;
-      height: 29px;
-      vertical-align: middle;
-      position: relative;
-      top: -5px;
-    }
-  }
-  div {
-    height: 46px;
-    img {
-      vertical-align: middle;
-      width: 44px;
-      height: 44px;
-    }
-    span {
-      font-size: 13px;
-    }
-  }
-}
-.stores {
-  @include shadow;
-  display: flex;
-  flex-direction: column;
-  padding: 20px 50px;
-  margin: 0 20px;
-  .hPic,
-  .connect {
-    width: 100%;
-    @include fx;
-    justify-content: flex-start;
-  }
-  .hPic {
-    display: flex;
-    justify-content: space-between;
-    .ltd {
-      overflow: hidden;
-      img {
-        width: 67px;
-        height: 67px;
-        margin-right: 20px;
-        float: left;
-      }
-      .ltdName {
-        float: left;
-        font-size: 24px;
-        color: #333333;
-        line-height: 24px;
-        font-weight: 600;
-        div {
-          display: flex;
-          span {
-            font-size: 14px;
-            color: #fb780e;
-            margin-right: 1em;
-            font-weight: 500;
-          }
-        }
-      }
-    }
-    .mark {
-      img {
-        width: 66px;
-        height: 66px;
-      }
-      .el-button {
-        display: block;
-        padding: 0;
-      }
-    }
-    .right {
-      .el-button {
-        padding: 0;
-        width: 86px;
-        height: 35px;
-      }
-    }
-    .line {
-      margin: 12px 5px;
-      width: 2px;
-      height: 37px;
-      background: #a0a0a0;
-    }
-  }
-  .storeinfo {
-    font-size: 19px;
-    color: #333333;
-    line-height: 48px;
-    .info {
-      overflow: hidden;
-      width: 100%;
-      .moreInfo {
-        width: 50%;
-      }
-      .line {
-        width: 2px;
-        background: #a0a0a0;
-        height: 37px;
-        margin: 24px 0;
-        margin-right: 42px;
-      }
-      div {
-        float: left;
-        width: 240px;
-        p {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-      }
-    }
-    .bsdata {
-      font-size: 15px;
-      color: #666666;
-      line-height: 16px;
-    }
-  }
-  .connect {
-    margin-left: -15px;
-    .noborder {
-      border: 0;
-      color: #333333;
-    }
-    li {
-      list-style: none;
-      overflow: hidden;
-      padding: 0 15px;
-      border-right: 2px solid #a0a0a0;
-      img {
-        width: 42px;
-        height: 42px;
-        float: left;
-      }
-      div {
-        float: left;
-        margin-left: 20px;
-        p {
-          font-size: 19px;
-          color: #333333;
-        }
-        div {
-          font-size: 15px;
-          margin: 0;
-          color: #666666;
-        }
-      }
-    }
-  }
-}
-.banner {
-  width: 100%;
-  @include fx;
-  padding: 0 20px;
-  margin: 20px 0;
-  .el-carousel {
-    width: 100%;
-    border-radius: 5px;
-    position: relative;
-  }
-  img {
-    width: 100%;
-    border-radius: 5px;
-    position: absolute;
-    top:-45%;
-  }
-}
-.credentials {
-  display: flex;
-  margin: 0 20px;
-  flex-direction: column;
-  h2 {
-    @include h;
-  }
-  .pic {
-    padding: 47px 0 13px 0;
-    @include shadow;
-    text-align: center;
-    width: 100%;
-    @include fx;
-    justify-content: space-around;
-    .piclist {
-      width: 120px;
-      height: 80px;
-      overflow: hidden;
-      img {
-        width: 100%;
-      }
+    .collect {
+        background: #f63a24;
     }
 
-    p {
-      font-size: 16px;
-      color: #333333;
-      line-height: 45px;
+    .ManagementDetail {
+        font-size: 14px;
+        height: 100%;
+        background: #f3f3f3;
+        header {
+            cursor: pointer;
+            height: 58px;
+            background: #fff;
+            font-size: 18px;
+            color: #000;
+            font-weight: 600;
+        }
+        .content {
+            width: 980px;
+            margin: 0 auto;
+            margin-top: 10px;
+            background: #fff;
+            height: calc(100% - 68px);
+            overflow-x: hidden;
+            .top {
+                display: flex;
+            }
+            .ltd {
+                position: relative;
+                padding: 21px;
+                .qrcode:hover {
+                    width: 106px;
+                    height: 152px;
+                    .ie {
+                        background: none;
+                    }
+                }
+                .qrcode {
+                    position: absolute;
+                    width: 60px;
+                    height: 60px;
+                    overflow: hidden;
+                    right: 0;
+                    top: 0;
+                    margin: 10px;
+                    .ie {
+                        width: 60px;
+                        height: 60px;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        background: linear-gradient(-135deg, transparent 50%, #fff 0) top right;
+                        background-size: 100%;
+                        background-repeat: no-repeat;
+                    }
+                    p {
+                        color: #f63a24;
+                        text-align: center;
+                        line-height: 20px;
+                    }
+                }
+                .banner {
+                    img {
+                        width: 420px;
+                    }
+                    width: 420px;
+                    height: 168px;
+                    margin: 0 20px 20px 0;
+                }
+                .right {
+                    h4 {
+                        font-size: 22px;
+                        padding: 9px 0 20px 0;
+                        span {
+                            display: inline-block;
+                            width: 44px;
+                            height: 20px;
+                            background: #fc0d1b;
+                            color: #fef1a0;
+                            text-align: center;
+                            font-size: 16px;
+                            border-radius: 4px;
+                            vertical-align: middle;
+                        }
+                    }
+                    .sort {
+                        display: flex;
+                        align-items: center;
+                        font-size: 12px;
+                        color: #999;
+                        p {
+                            span {
+                                padding: 0 14px;
+                                border-left: 1px solid #ccc;
+                            }
+                        }
+                        .some {
+                            font-size: 18px;
+                            color: #fab12a;
+                        }
+                        .ebg {
+                            img {
+                                width: 17px;
+                                height: 20px;
+                                margin: 0 6px;
+                            }
+                        }
+                    }
+                    .Management {
+                        font-size: 14px;
+                        display: flex;
+                        margin: 15px 0;
+                        span {
+                            text-align: center;
+                            line-height: 18px;
+                            display: inline-block;
+                            width: 34px;
+                            height: 18px;
+                            color: #fff;
+                            background: #56b9ff;
+                            font-size: 12px;
+                            border-radius: 2px;
+                            margin-right: 10px;
+                        }
+                    }
+                    .connect {
+                        display: flex;
+                        p {
+                            margin-right: 31px;
+                            img {
+                                vertical-align: middle;
+                                margin-right: 7px;
+                            }
+                        }
+                    }
+                    .address {
+                        margin-top: 15px;
+                    }
+                }
+                .jubao {
+                    cursor: pointer;
+                    display: flex;
+                    margin-right: 11px;
+                    flex-direction: row-reverse;
+                    font-size: 16px;
+                    color: #f63a23;
+                    img {
+                        margin-right: 20px;
+                        vertical-align: middle;
+                    }
+                    p {
+                        line-height: 22px;
+                        margin-right: 38px;
+                        img {
+                            margin-right: 6px;
+                            vertical-align: sub;
+                        }
+                    }
+                }
+                .introduction {
+                    display: flex;
+                    align-items: baseline;
+                    color: #666;
+                    span {
+                        margin-right: 10px;
+                    }
+                    p {
+                        width: 70%;
+                        line-height: 20px;
+                    }
+                }
+                .active {
+                    margin-top: 14px;
+                    display: flex;
+                    align-items: baseline;
+                    color: #666;
+                    p {
+                        height: 24px;
+                        background: #fee9e2;
+                        color: #fc684f;
+                        padding: 0 10px;
+                        line-height: 24px;
+                        border-radius: 2px;
+                    }
+                }
+            }
+            .Authentication {
+                border-top: 10px solid #f3f3f3;
+                border-bottom: 10px solid #f3f3f3;
+                height: 240px;
+                padding-bottom: 21px;
+                h5 {
+                    padding: 21px;
+                }
+                ul {
+                    margin-left: 40px;
+                    display: flex;
+                    li {
+                        font-size: 14px;
+                        margin: 0 20px;
+                        text-align: center;
+                        list-style: none;
+                        margin-right: 40px;
+                        p {
+                            margin: 10px 0;
+                        }
+                        .el-icon-circle-check {
+                            font-size: 12px;
+                        }
+                        .el-icon-circle-check:before {
+                            font-size: 16px;
+                            vertical-align: middle;
+                            margin-right: 5px;
+                        }
+                    }
+                }
+                .img {
+                    width: 110px;
+                    height: 81px;
+                    overflow: hidden;
+                    border-radius: 10px;
+                    img {
+                        width: 100%;
+                        height: auto;
+                    }
+                }
+                .el-icon-circle-check {
+                    color: #f63a24;
+                }
+            }
+        }
     }
-    .el-button {
-      width: 54px;
-      height: 24px;
-      padding: 0;
-    }
-    div {
-      font-size: 14px;
-      color: #fb780e;
-      margin-bottom: 13px;
-    }
-  }
-}
-li {
-  list-style: none;
-}
-img {
-  border-radius: 5%;
-}
-.banner h2 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-}
-</style>
-<style>
-.el-carousel__indicators--outside {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  left: 0 !important;
-}
-.el-carousel__indicators--outside li {
-  padding: 0;
-  margin:10px;
-  border-radius: 50%;
-  background: #a4a4a4;
-}
-.el-carousel__indicators--outside li button {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  background: transparent;
-  opacity: 0.5;
-}
-.is-active {
-  background: #fff !important;
-}
-</style>
 
+    h5 {
+        font-size: 16px;
+    }
+</style>
+<style lang='scss'>
+    .ManagementDetail {
+        .el-carousel__container {
+            width: 420px !important;
+            height: 168px !important;
+        }
+        .el-rate__item {
+            vertical-align: -webkit-baseline-middle;
+        }
+        .el-rate__icon {
+            font-size: 15px;
+        }
+        .diaBox {
+
+            .el-dialog__body {
+                padding: 0;
+            }
+            .el-checkbox__label {
+                display: none;
+            }
+        }
+    }
+</style>
