@@ -1,5 +1,5 @@
-import {app, BrowserWindow, ipcMain, Tray, Menu} from 'electron'
-
+import {app, BrowserWindow, ipcMain, Tray, Menu,clipboard} from 'electron'
+const child = require('child_process');
 var exec = require('child_process').exec;
 exec('node --no-deprecation', function (err, stdout, stderr) {
     console.log(err, stdout, stderr)
@@ -33,6 +33,21 @@ var isTwinkle = null
 const winURL = process.env.NODE_ENV === 'development'
     ? `http://localhost:9080`
     : `file://${__dirname}/index.html`
+    function finishShot(code) {
+        if (code == 1) {
+            let nativeImage = clipboard.readImage('selection');
+            if (nativeImage.getSize().width > 0) //粘贴图片
+            {
+                var image = clipboard.readImage();
+                let nativeImageSrc = image.toDataURL();
+                let html = "<img  src='" + nativeImageSrc + "' alt='' />";
+            }
+        }
+        else if (code == 2) {//取消截图
+        }
+        else if (code == 3) {//保存截图
+        }
+    }
 var menu = Menu.buildFromTemplate([
     {
         label: "最大化",
@@ -54,6 +69,30 @@ var menu = Menu.buildFromTemplate([
     }
 
 ])
+function isWindows() {
+    var os = require("os");
+    return os.platform() == "win32";
+}
+ipcMain.on('llll',function(){
+    if (isWindows()) {
+    var screenShotExePath = path.join(__dirname, "../../dist/electron/static/cap/PrintScr.exe");
+    child.execFile(screenShotExePath, function (err, data) {
+        console.log(err, data)
+        if (err == null) {  //完成截图
+            finishShot(err.code);
+        }
+        else {
+            finishShot(err.code);
+        //   console.error(err);
+        }
+    })}else{
+        var screenShotExePath = path.join(__dirname, "../../dist/electron/static/cap/ScreenCapture.app/Contents/MacOS/ScreenCapture");
+        var screenShotPatharam = ['startfromlocal,' + path.join(__dirname, '../../dist/electron/static/cap/set.info ') + ',' + path.join(__dirname, '../../dist/electron/static/cap/response.info') + ',0,3,0,0,0,0,0'];
+        child.spawn(screenShotExePath, screenShotPatharam, { stdio: 'inherit' }).on('close', function (code) {
+            finishShot(code);
+        })
+    }
+})
 
 function createWindow() {
     mainWindow = new BrowserWindow({

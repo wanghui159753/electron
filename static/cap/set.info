@@ -1,0 +1,17 @@
+{
+	"CmdType": 1,
+	"Pensize": 2,
+	"DrawType": 0,
+	"TrackColor": 255,
+	"EditBorderColor": 16711680,
+	"Transparent": 240,
+	"SetSaveName": "测试保存",
+	"SetMagnifierLogoText": "测试截图",
+	"SetWatermarkPictureTypeEx": "2|100|100|400|400|20",
+	"SetWatermarkPicturePath": "",
+	"SetWatermarkTextTypeEx": "2|100|100|100|40|20|0|150|30|80,55,55,55",
+	"SetWatermarkTextValue": "",
+	"MosaicType": 1,
+	"SetToolbarText": "",
+	"MoreInfo": "1,100|300|600",
+}

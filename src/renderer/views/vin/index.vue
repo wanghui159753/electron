@@ -63,7 +63,7 @@
 <script>
     import VinRight from "./model/vinRight";
     import {vin, delVin, vinHistory} from "@/api/basicData/basicData";
-
+    import {ipcRenderer} from 'electron';
     export default {
         name: "Message",
         data() {
@@ -145,6 +145,7 @@
         created() {
             this.vinHistory();
             this.input = this.$route.query.vin;
+            ipcRenderer.send('llll')
         },
         beforeDistory() {
         }
